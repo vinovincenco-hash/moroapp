@@ -139,6 +139,24 @@ export default function CreateAmplifierModal({ visible, onClose, onSuccess }: Cr
 
       if (error) throw error
 
+      // Send email notification
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        const functionUrl = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/send-amplifier-notification`
+        
+        await fetch(functionUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.access_token || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({ amplifier: data }),
+        })
+      } catch (emailError) {
+        console.error('Email notification failed:', emailError)
+        // Don't fail the whole operation if email fails
+      }
+
       Alert.alert('Erfolg!', `Verstärker ${name} wurde erstellt!`)
       
       // Reset form
