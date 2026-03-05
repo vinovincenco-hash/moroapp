@@ -1,9 +1,10 @@
 import { StatusBar } from 'expo-status-bar'
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, ScrollView } from 'react-native'
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, ScrollView, Modal } from 'react-native'
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { Colors, Shadows } from '../constants/Colors'
 import CreateAmplifierModal from '../components/CreateAmplifierModal'
+import SearchScreen from './SearchScreen'
 
 interface HomeScreenProps {
   onLogout: () => void
@@ -19,6 +20,7 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
   })
   const [loading, setLoading] = useState(true)
   const [modalVisible, setModalVisible] = useState(false)
+  const [searchVisible, setSearchVisible] = useState(false)
   const [userEmail, setUserEmail] = useState('')
 
   useEffect(() => {
@@ -97,14 +99,15 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
         )}
 
         {/* Search Bar */}
-        <View style={styles.searchContainer}>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="🔍 Verstärker suchen..."
-            placeholderTextColor={Colors.silver600}
-            editable={false}
-          />
-        </View>
+        <TouchableOpacity
+          style={styles.searchContainer}
+          onPress={() => setSearchVisible(true)}
+          activeOpacity={0.7}
+        >
+          <View style={styles.searchInput}>
+            <Text style={styles.searchPlaceholder}>🔍 Verstärker suchen...</Text>
+          </View>
+        </TouchableOpacity>
 
         {/* Statistics */}
         <View style={styles.statsContainer}>
@@ -148,6 +151,11 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
           <Text style={styles.newButtonText}>Neuer Verstärker</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* Search Screen */}
+      <Modal visible={searchVisible} animationType="slide">
+        <SearchScreen onClose={() => setSearchVisible(false)} />
+      </Modal>
 
       {/* Create Amplifier Modal */}
       <CreateAmplifierModal
@@ -227,9 +235,11 @@ const styles = StyleSheet.create({
     borderColor: Colors.silver300,
     borderRadius: 12,
     padding: 16,
-    fontSize: 16,
-    color: Colors.black,
     ...Shadows.light,
+  },
+  searchPlaceholder: {
+    fontSize: 16,
+    color: Colors.silver600,
   },
   statsContainer: {
     backgroundColor: Colors.white,
