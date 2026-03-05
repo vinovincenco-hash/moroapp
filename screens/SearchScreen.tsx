@@ -6,10 +6,34 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  Modal,
+  TextInput,
+  Alert,
 } from 'react-native'
 import { Picker } from '@react-native-picker/picker'
 import { Colors, Shadows } from '../constants/Colors'
 import { supabase } from '../lib/supabase'
+
+const DETAIL_FIELDS = [
+  { key: 'name', label: 'Name' },
+  { key: 'hub', label: 'HUB' },
+  { key: 'node_neu', label: 'Node' },
+  { key: 'node_alt', label: 'Node Alt' },
+  { key: 'strecke_bezeichnung', label: 'Strecke Bez. Alt' },
+  { key: 'lv_ev_bezeichnung', label: 'LV/EV Bez. Alt' },
+  { key: 'verstaerker_bezeichnung', label: 'Verstärkerbezeichnung' },
+  { key: 'parents', label: 'Parents' },
+  { key: 'strasse', label: 'Straße' },
+  { key: 'hausnummer', label: 'Hnr' },
+  { key: 'location_plz', label: 'PLZ' },
+  { key: 'location_ort', label: 'Ort' },
+  { key: 'verstaerker_type', label: 'Verstärkertype' },
+  { key: 'regelung', label: 'Regelung' },
+  { key: 'fsk_address', label: 'FSK' },
+  { key: 'firmware_version', label: 'Firmware' },
+  { key: 'datum', label: 'Datum' },
+  { key: 'bemerkungen', label: 'Bemerkungen' },
+]
 
 interface SearchScreenProps {
   onClose: () => void
@@ -35,13 +59,22 @@ interface Amplifier {
   id: number
   hub: string
   node_neu: string
+  node_alt: string
+  strecke_bezeichnung: string
+  lv_ev_bezeichnung: string
   verstaerker_bezeichnung: string
-  location_plz: string
-  location_ort: string
+  parents: string
   strasse: string
   hausnummer: string
+  location_plz: string
+  location_ort: string
+  location_address: string
   verstaerker_type: string
+  regelung: string
   fsk_address: string
+  firmware_version: string
+  datum: string
+  bemerkungen: string
 }
 
 export default function SearchScreen({ onClose }: SearchScreenProps) {
@@ -50,6 +83,10 @@ export default function SearchScreen({ onClose }: SearchScreenProps) {
   const [results, setResults] = useState<Amplifier[]>([])
   const [resultCount, setResultCount] = useState<number>(0)
   const [loading, setLoading] = useState(false)
+  const [selectedAmp, setSelectedAmp] = useState<Amplifier | null>(null)
+  const [editMode, setEditMode] = useState(false)
+  const [editData, setEditData] = useState<Record<string, string>>({})
+  const [saving, setSaving] = useState(false)
   const debounceRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
@@ -67,7 +104,7 @@ export default function SearchScreen({ onClose }: SearchScreenProps) {
     try {
       let query = supabase
         .from('amplifiers')
-        .select('id, hub, node_neu, location_plz, location_ort, strasse, hausnummer, verstaerker_type, firmware_version, parents, verstaerker_bezeichnung, fsk_address')
+        .select('*')
 
       if (currentFilters.hub) query = query.eq('hub', currentFilters.hub)
       if (currentFilters.node_neu) query = query.eq('node_neu', currentFilters.node_neu)
@@ -129,6 +166,34 @@ export default function SearchScreen({ onClose }: SearchScreenProps) {
 
   const handleReset = () => {
     setFilters({})
+  }
+
+  const openDetail = (amp: Amplifier) => {
+    setSelectedAmp(amp)
+    setEditMode(false)
+    const ed: Record<string, string> = {}
+    DETAIL_FIELDS.forEach(f => { ed[f.key] = (amp as any)[f.key] || '' })
+    setEditData(ed)
+  }
+
+  const handleSave = async () => {
+    if (!selectedAmp) return
+    setSaving(true)
+    const addr = [editData.strasse, editData.hausnummer, editData.location_plz, editData.location_ort].filter(Boolean).join(' ')
+    const { error } = await supabase
+      .from('amplifiers')
+      .update({ ...editData, location_address: addr })
+      .eq('id', selectedAmp.id)
+
+    if (error) {
+      Alert.alert('Fehler', error.message)
+    } else {
+      Alert.alert('Erfolg', 'Gespeichert!')
+      setEditMode(false)
+      setSelectedAmp(null)
+      fetchDynamicOptions(filters) // refresh results
+    }
+    setSaving(false)
   }
 
   const activeFilterCount = Object.values(filters).filter(v => v && v !== '').length
@@ -224,21 +289,84 @@ export default function SearchScreen({ onClose }: SearchScreenProps) {
             {resultCount > 50 && ' — erste 50 angezeigt'}
           </Text>
           {results.map((amp) => (
-            <View key={amp.id} style={styles.resultCard}>
-              <Text style={styles.resultName}>{amp.verstaerker_bezeichnung || '–'}</Text>
+            <TouchableOpacity key={amp.id} style={styles.resultCard} onPress={() => openDetail(amp)} activeOpacity={0.7}>
+              <Text style={styles.resultName}>{amp.verstaerker_bezeichnung || amp.hub || '–'}</Text>
               <Text style={styles.resultDetail}>
                 {amp.hub} • {amp.node_neu} • {amp.location_plz} {amp.location_ort}
               </Text>
               <Text style={styles.resultDetail}>
-                {amp.strasse} {amp.hausnummer} • FSK: {amp.fsk_address || '–'}
+                {amp.strasse} {amp.hausnummer} • FSK: {amp.fsk_address || '–'} • Type: {amp.verstaerker_type || '–'}
               </Text>
-            </View>
+              {amp.firmware_version && <Text style={styles.resultDetail}>Firmware: {amp.firmware_version}</Text>}
+            </TouchableOpacity>
           ))}
           {results.length === 0 && !loading && (
             <Text style={styles.noResults}>Keine Ergebnisse</Text>
           )}
         </View>
       </ScrollView>
+
+      {/* Detail/Edit Modal */}
+      <Modal visible={!!selectedAmp} animationType="slide" presentationStyle="pageSheet">
+        <View style={{ flex: 1, backgroundColor: Colors.white }}>
+          {/* Detail Header */}
+          <View style={styles.header}>
+            <View>
+              <Text style={styles.headerTitle}>{editMode ? '✏️ Bearbeiten' : '📋 Details'}</Text>
+              <Text style={styles.headerSubtitle}>{selectedAmp?.verstaerker_bezeichnung || selectedAmp?.name || ''}</Text>
+            </View>
+            <TouchableOpacity onPress={() => { setSelectedAmp(null); setEditMode(false) }} style={styles.closeButton}>
+              <Text style={styles.closeButtonText}>✕</Text>
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }}>
+            {DETAIL_FIELDS.map((field) => (
+              <View key={field.key} style={{ marginBottom: 16 }}>
+                <Text style={{ fontSize: 11, fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', marginBottom: 4 }}>{field.label}</Text>
+                {editMode ? (
+                  <TextInput
+                    style={[styles.input, { fontSize: 15 }]}
+                    value={editData[field.key] || ''}
+                    onChangeText={(v) => setEditData({ ...editData, [field.key]: v })}
+                    placeholder="–"
+                    placeholderTextColor="#d1d5db"
+                    multiline={field.key === 'bemerkungen'}
+                  />
+                ) : (
+                  <Text style={{ fontSize: 15, fontWeight: '500', color: (selectedAmp as any)?.[field.key] ? Colors.black : '#d1d5db' }}>
+                    {(selectedAmp as any)?.[field.key] || '–'}
+                  </Text>
+                )}
+              </View>
+            ))}
+          </ScrollView>
+
+          {/* Detail Buttons */}
+          <View style={{ padding: 16, borderTopWidth: 2, borderTopColor: '#e5e7eb', backgroundColor: Colors.white, gap: 8 }}>
+            {editMode ? (
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <TouchableOpacity
+                  style={{ flex: 1, padding: 14, backgroundColor: '#f3f4f6', borderWidth: 2, borderColor: '#d1d5db', borderRadius: 10, alignItems: 'center' }}
+                  onPress={() => setEditMode(false)}>
+                  <Text style={{ fontWeight: 'bold', color: Colors.black }}>Abbrechen</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{ flex: 2, padding: 14, backgroundColor: Colors.gold, borderWidth: 2, borderColor: Colors.goldDark, borderRadius: 10, alignItems: 'center', opacity: saving ? 0.5 : 1 }}
+                  onPress={handleSave} disabled={saving}>
+                  <Text style={{ fontWeight: 'bold', color: Colors.black }}>{saving ? '⏳ Speichere...' : '✅ Speichern'}</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={{ padding: 14, backgroundColor: '#3b82f6', borderRadius: 10, alignItems: 'center' }}
+                onPress={() => setEditMode(true)}>
+                <Text style={{ fontWeight: 'bold', color: 'white', fontSize: 16 }}>✏️ Bearbeiten</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      </Modal>
     </View>
   )
 }
