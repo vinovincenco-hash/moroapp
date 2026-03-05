@@ -37,27 +37,37 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
 
   const fetchStats = async () => {
     try {
-      // Total count
+      // Use exact count queries per HUB (no 1000-row limit!)
       const { count: total } = await supabase
         .from('amplifiers')
         .select('*', { count: 'exact', head: true })
 
-      // HUB counts
-      const { data: hubData } = await supabase
+      const { count: worgl } = await supabase
         .from('amplifiers')
-        .select('hub')
+        .select('*', { count: 'exact', head: true })
+        .eq('hub', 'Wörgl')
 
-      const worgl = hubData?.filter(a => a.hub === 'Wörgl').length || 0
-      const schwaz = hubData?.filter(a => a.hub === 'Schwaz').length || 0
-      const stJohann = hubData?.filter(a => a.hub === 'St.Johann').length || 0
-      const lienz = hubData?.filter(a => a.hub === 'Lienz').length || 0
+      const { count: schwaz } = await supabase
+        .from('amplifiers')
+        .select('*', { count: 'exact', head: true })
+        .eq('hub', 'Schwaz')
+
+      const { count: stJohann } = await supabase
+        .from('amplifiers')
+        .select('*', { count: 'exact', head: true })
+        .eq('hub', 'St.Johann')
+
+      const { count: lienz } = await supabase
+        .from('amplifiers')
+        .select('*', { count: 'exact', head: true })
+        .eq('hub', 'Lienz')
 
       setStats({
         total: total || 0,
-        worgl,
-        schwaz,
-        stJohann,
-        lienz,
+        worgl: worgl || 0,
+        schwaz: schwaz || 0,
+        stJohann: stJohann || 0,
+        lienz: lienz || 0,
       })
     } catch (error) {
       console.error('Error fetching stats:', error)
