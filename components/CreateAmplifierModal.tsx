@@ -5,12 +5,15 @@ import {
 } from 'react-native'
 import { Picker } from '@react-native-picker/picker'
 import { Colors, Shadows } from '../constants/Colors'
-import { supabase } from '../lib/supabase'
+import { supabase, DatabaseType } from '../lib/supabase'
+import CreateHFCIntegrationModal from './CreateHFCIntegrationModal'
+import CreateFTTXModal from './CreateFTTXModal'
 
 interface CreateAmplifierModalProps {
   visible: boolean
   onClose: () => void
   onSuccess: () => void
+  dbType?: DatabaseType
 }
 
 interface CascadingOptions {
@@ -26,7 +29,17 @@ const EMPTY_OPTIONS: CascadingOptions = {
   hubs: [], nodes_neu: [], plzs: [], orte: [], strassen: [], verstaerker_bezeichnungen: [],
 }
 
-export default function CreateAmplifierModal({ visible, onClose, onSuccess }: CreateAmplifierModalProps) {
+export default function CreateAmplifierModal({ visible, onClose, onSuccess, dbType = 'hfc_862' }: CreateAmplifierModalProps) {
+  // Route to correct modal based on database type
+  if (dbType === 'hfc_integration') {
+    return <CreateHFCIntegrationModal visible={visible} onClose={onClose} onSuccess={onSuccess} />
+  }
+  
+  if (dbType === 'fttx') {
+    return <CreateFTTXModal visible={visible} onClose={onClose} onSuccess={onSuccess} />
+  }
+
+  // HFC 862 (default) - original modal below
   const [formData, setFormData] = useState({
     hub: '',
     node_neu: '',

@@ -12,7 +12,7 @@ import {
 } from 'react-native'
 import { Picker } from '@react-native-picker/picker'
 import { Colors, Shadows } from '../constants/Colors'
-import { supabase } from '../lib/supabase'
+import { supabase, Amplifier } from '../lib/supabase'
 
 const DETAIL_FIELDS = [
   { key: 'name', label: 'Name' },
@@ -53,28 +53,6 @@ interface DynamicOptions {
 const EMPTY_OPTIONS: DynamicOptions = {
   hubs: [], nodes_neu: [], plzs: [], orte: [],
   strassen: [], types: [], firmwares: [], parents: [],
-}
-
-interface Amplifier {
-  id: number
-  hub: string
-  node_neu: string
-  node_alt: string
-  strecke_bezeichnung: string
-  lv_ev_bezeichnung: string
-  verstaerker_bezeichnung: string
-  parents: string
-  strasse: string
-  hausnummer: string
-  location_plz: string
-  location_ort: string
-  location_address: string
-  verstaerker_type: string
-  regelung: string
-  fsk_address: string
-  firmware_version: string
-  datum: string
-  bemerkungen: string
 }
 
 export default function SearchScreen({ onClose }: SearchScreenProps) {
@@ -526,6 +504,16 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: Colors.silver700,
     marginBottom: 2,
+  },
+  input: {
+    backgroundColor: Colors.white,
+    borderWidth: 2,
+    borderColor: Colors.silver300,
+    borderRadius: 10,
+    padding: 14,
+    fontSize: 16,
+    color: Colors.black,
+    ...Shadows.light,
   },
   noResults: {
     fontSize: 14,

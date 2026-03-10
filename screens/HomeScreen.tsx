@@ -1,7 +1,7 @@
 import { StatusBar } from 'expo-status-bar'
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, ScrollView, Modal } from 'react-native'
 import { useEffect, useState } from 'react'
-import { supabase } from '../lib/supabase'
+import { supabase, DatabaseType, getTableName, getDisplayName } from '../lib/supabase'
 import { Colors, Shadows } from '../constants/Colors'
 import CreateAmplifierModal from '../components/CreateAmplifierModal'
 import SearchScreen from './SearchScreen'
@@ -11,6 +11,7 @@ interface HomeScreenProps {
 }
 
 export default function HomeScreen({ onLogout }: HomeScreenProps) {
+  const [currentDB, setCurrentDB] = useState<DatabaseType>('hfc_862')
   const [stats, setStats] = useState({
     total: 0,
     worgl: 0,
@@ -24,9 +25,12 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
   const [userEmail, setUserEmail] = useState('')
 
   useEffect(() => {
-    fetchStats()
     fetchUser()
   }, [])
+
+  useEffect(() => {
+    fetchStats()
+  }, [currentDB])
 
   const fetchUser = async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -36,39 +40,54 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
   }
 
   const fetchStats = async () => {
+    setLoading(true)
     try {
-      // Use exact count queries per HUB (no 1000-row limit!)
+      const tableName = getTableName(currentDB)
+
+      // Get total count
       const { count: total } = await supabase
-        .from('amplifiers')
+        .from(tableName)
         .select('*', { count: 'exact', head: true })
 
-      const { count: worgl } = await supabase
-        .from('amplifiers')
-        .select('*', { count: 'exact', head: true })
-        .eq('hub', 'Wörgl')
+      // For HFC 862: stats by HUB
+      if (currentDB === 'hfc_862') {
+        const { count: worgl } = await supabase
+          .from(tableName)
+          .select('*', { count: 'exact', head: true })
+          .eq('hub', 'Wörgl')
 
-      const { count: schwaz } = await supabase
-        .from('amplifiers')
-        .select('*', { count: 'exact', head: true })
-        .eq('hub', 'Schwaz')
+        const { count: schwaz } = await supabase
+          .from(tableName)
+          .select('*', { count: 'exact', head: true })
+          .eq('hub', 'Schwaz')
 
-      const { count: stJohann } = await supabase
-        .from('amplifiers')
-        .select('*', { count: 'exact', head: true })
-        .eq('hub', 'St.Johann')
+        const { count: stJohann } = await supabase
+          .from(tableName)
+          .select('*', { count: 'exact', head: true })
+          .eq('hub', 'St.Johann')
 
-      const { count: lienz } = await supabase
-        .from('amplifiers')
-        .select('*', { count: 'exact', head: true })
-        .eq('hub', 'Lienz')
+        const { count: lienz } = await supabase
+          .from(tableName)
+          .select('*', { count: 'exact', head: true })
+          .eq('hub', 'Lienz')
 
-      setStats({
-        total: total || 0,
-        worgl: worgl || 0,
-        schwaz: schwaz || 0,
-        stJohann: stJohann || 0,
-        lienz: lienz || 0,
-      })
+        setStats({
+          total: total || 0,
+          worgl: worgl || 0,
+          schwaz: schwaz || 0,
+          stJohann: stJohann || 0,
+          lienz: lienz || 0,
+        })
+      } else {
+        // For HFC Integration & FTTX: stats by Bundesland (or simple total)
+        setStats({
+          total: total || 0,
+          worgl: 0,
+          schwaz: 0,
+          stJohann: 0,
+          lienz: 0,
+        })
+      }
     } catch (error) {
       console.error('Error fetching stats:', error)
     } finally {
@@ -108,6 +127,37 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
           </View>
         )}
 
+        {/* Database Switcher */}
+        <View style={styles.dbSwitcher}>
+          <TouchableOpacity
+            style={[styles.dbTab, currentDB === 'hfc_862' && styles.dbTabActive]}
+            onPress={() => setCurrentDB('hfc_862')}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.dbTabText, currentDB === 'hfc_862' && styles.dbTabTextActive]}>
+              📡 HFC 862
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.dbTab, currentDB === 'hfc_integration' && styles.dbTabActive]}
+            onPress={() => setCurrentDB('hfc_integration')}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.dbTabText, currentDB === 'hfc_integration' && styles.dbTabTextActive]}>
+              🔧 Integration
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.dbTab, currentDB === 'fttx' && styles.dbTabActive]}
+            onPress={() => setCurrentDB('fttx')}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.dbTabText, currentDB === 'fttx' && styles.dbTabTextActive]}>
+              💡 FTTX
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Search Bar */}
         <TouchableOpacity
           style={styles.searchContainer}
@@ -131,22 +181,28 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
                 <Text style={styles.statLabel}>Total:</Text>
                 <Text style={styles.statValue}>{stats.total.toLocaleString()}</Text>
               </View>
-              <View style={styles.statRow}>
-                <Text style={styles.statLabel}>• Wörgl:</Text>
-                <Text style={styles.statValue}>{stats.worgl.toLocaleString()}</Text>
-              </View>
-              <View style={styles.statRow}>
-                <Text style={styles.statLabel}>• Schwaz:</Text>
-                <Text style={styles.statValue}>{stats.schwaz.toLocaleString()}</Text>
-              </View>
-              <View style={styles.statRow}>
-                <Text style={styles.statLabel}>• St.Johann:</Text>
-                <Text style={styles.statValue}>{stats.stJohann.toLocaleString()}</Text>
-              </View>
-              <View style={styles.statRow}>
-                <Text style={styles.statLabel}>• Lienz:</Text>
-                <Text style={styles.statValue}>{stats.lienz.toLocaleString()}</Text>
-              </View>
+              
+              {/* Show HUB breakdown only for HFC 862 */}
+              {currentDB === 'hfc_862' && (
+                <>
+                  <View style={styles.statRow}>
+                    <Text style={styles.statLabel}>• Wörgl:</Text>
+                    <Text style={styles.statValue}>{stats.worgl.toLocaleString()}</Text>
+                  </View>
+                  <View style={styles.statRow}>
+                    <Text style={styles.statLabel}>• Schwaz:</Text>
+                    <Text style={styles.statValue}>{stats.schwaz.toLocaleString()}</Text>
+                  </View>
+                  <View style={styles.statRow}>
+                    <Text style={styles.statLabel}>• St.Johann:</Text>
+                    <Text style={styles.statValue}>{stats.stJohann.toLocaleString()}</Text>
+                  </View>
+                  <View style={styles.statRow}>
+                    <Text style={styles.statLabel}>• Lienz:</Text>
+                    <Text style={styles.statValue}>{stats.lienz.toLocaleString()}</Text>
+                  </View>
+                </>
+              )}
             </>
           )}
         </View>
@@ -174,6 +230,7 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
         onSuccess={() => {
           fetchStats() // Refresh stats after creating
         }}
+        dbType={currentDB}
       />
     </View>
   )
@@ -235,6 +292,35 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.silver700,
     fontWeight: '600',
+  },
+  dbSwitcher: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 20,
+  },
+  dbTab: {
+    flex: 1,
+    backgroundColor: Colors.white,
+    borderWidth: 2,
+    borderColor: Colors.silver300,
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: 'center',
+    ...Shadows.light,
+  },
+  dbTabActive: {
+    backgroundColor: Colors.gold,
+    borderColor: Colors.goldDark,
+    ...Shadows.gold,
+  },
+  dbTabText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: Colors.silver700,
+  },
+  dbTabTextActive: {
+    color: Colors.black,
+    fontWeight: 'bold',
   },
   searchContainer: {
     marginBottom: 24,
