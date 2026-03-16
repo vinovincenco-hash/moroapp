@@ -8,6 +8,7 @@ import CreateHFCIntegrationModal from '../components/CreateHFCIntegrationModal'
 import CreateFTTXModal from '../components/CreateFTTXModal'
 import FormTypeSelector from '../components/FormTypeSelector'
 import SearchScreen from './SearchScreen'
+import MeinBereichScreen from './MeinBereichScreen'
 
 interface HomeScreenProps {
   onLogout: () => void
@@ -31,6 +32,7 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
   const [formSelectorVisible, setFormSelectorVisible] = useState(false)
   const [selectedFormType, setSelectedFormType] = useState<DatabaseType | null>(null)
   const [searchVisible, setSearchVisible] = useState(false)
+  const [meinBereichVisible, setMeinBereichVisible] = useState(false)
   const [userEmail, setUserEmail] = useState('')
 
   useEffect(() => {
@@ -315,15 +317,26 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
           )}
         </View>
 
-        {/* New Amplifier Button */}
-        <TouchableOpacity 
-          style={styles.newButton}
-          onPress={() => setFormSelectorVisible(true)}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.newButtonIcon}>➕</Text>
-          <Text style={styles.newButtonText}>Neuer Verstärker</Text>
-        </TouchableOpacity>
+        {/* Action Buttons */}
+        <View style={{ gap: 12, marginBottom: 20 }}>
+          <TouchableOpacity 
+            style={styles.newButton}
+            onPress={() => setFormSelectorVisible(true)}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.newButtonIcon}>➕</Text>
+            <Text style={styles.newButtonText}>Neuer Verstärker</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.newButton, { backgroundColor: Colors.bgCard, borderColor: Colors.borderGold }]}
+            onPress={() => setMeinBereichVisible(true)}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.newButtonIcon}>👤</Text>
+            <Text style={[styles.newButtonText, { color: Colors.gold }]}>Mein Bereich</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
 
       {/* Form Type Selector */}
@@ -335,6 +348,11 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
         }}
         onClose={() => setFormSelectorVisible(false)}
       />
+
+      {/* Mein Bereich */}
+      <Modal visible={meinBereichVisible} animationType="slide">
+        <MeinBereichScreen onClose={() => setMeinBereichVisible(false)} />
+      </Modal>
 
       {/* Search Screen */}
       <Modal visible={searchVisible} animationType="slide">
