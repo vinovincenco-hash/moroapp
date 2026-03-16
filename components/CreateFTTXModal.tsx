@@ -3,7 +3,6 @@ import {
   Modal, View, Text, TextInput, TouchableOpacity, ScrollView,
   StyleSheet, KeyboardAvoidingView, Platform, Alert,
 } from 'react-native'
-import { Picker } from '@react-native-picker/picker'
 import { Colors, Shadows } from '../constants/Colors'
 import { supabase } from '../lib/supabase'
 
@@ -13,230 +12,168 @@ interface CreateFTTXModalProps {
   onSuccess: () => void
 }
 
+interface FormData {
+  hec_nummer: string
+  name: string
+  type_code: string
+  mac_adresse: string
+  address_line_1: string
+  address_line_2: string
+  comment_1: string
+}
+
+const INITIAL: FormData = {
+  hec_nummer: '', name: '', type_code: '', mac_adresse: '',
+  address_line_1: '', address_line_2: '', comment_1: '',
+}
+
 export default function CreateFTTXModal({ visible, onClose, onSuccess }: CreateFTTXModalProps) {
-  const [formData, setFormData] = useState({
-    bundesland: '',
-    gebiet: '',
-    block: '',
-    nummer: '',
-    hec_nummer: '',
-    mac_adresse: '',
-    typ: '' as 'ONB' | 'ONH' | 'OLT' | '',
-    plz: '',
-    ort: '',
-    strasse: '',
-    hausnummer: '',
-    projektant: '',
-    referenz: '',
-    info_location: '',
-  })
+  const [form, setForm] = useState<FormData>(INITIAL)
+  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({})
+  const [saving, setSaving] = useState(false)
 
-  const [creating, setCreating] = useState(false)
-
-  const updateField = (field: string, value: string) => {
-    setFormData({ ...formData, [field]: value })
+  const set = (key: keyof FormData, value: string) => {
+    setForm(prev => ({ ...prev, [key]: value }))
+    if (errors[key]) {
+      setErrors(prev => ({ ...prev, [key]: undefined }))
+    }
   }
 
-  const canSubmit = () => {
-    return formData.bundesland && formData.gebiet && formData.block && formData.nummer &&
-      formData.typ && formData.plz && formData.ort && formData.strasse && formData.hausnummer
+  const validateForm = (): boolean => {
+    const e: Partial<Record<keyof FormData, string>> = {}
+    if (!form.hec_nummer) e.hec_nummer = 'Pflichtfeld'
+    if (!form.mac_adresse) e.mac_adresse = 'Pflichtfeld'
+    setErrors(e)
+    return Object.keys(e).length === 0
   }
 
   const handleSubmit = async () => {
-    if (!canSubmit()) {
-      Alert.alert('Fehler', 'Bitte alle Pflichtfelder (*) ausfüllen!')
+    if (!validateForm()) {
+      Alert.alert('Fehler', 'Bitte alle Pflichtfelder ausfüllen!')
       return
     }
 
-    setCreating(true)
+    setSaving(true)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-
-      const { error } = await supabase
-        .from('fttx')
-        .insert({
-          bundesland: formData.bundesland,
-          gebiet: formData.gebiet,
-          block: formData.block,
-          nummer: formData.nummer,
-          hec_nummer: formData.hec_nummer || null,
-          mac_adresse: formData.mac_adresse || null,
-          typ: formData.typ,
-          plz: formData.plz,
-          ort: formData.ort,
-          strasse: formData.strasse,
-          hausnummer: formData.hausnummer,
-          projektant: formData.projektant || null,
-          referenz: formData.referenz || null,
-          info_location: formData.info_location || null,
-          techniker: user?.email || null,
-        })
+      const { error } = await supabase.from('fttx').insert({
+        hec_nummer: form.hec_nummer,
+        name: form.name || null,
+        type_code: form.type_code || null,
+        mac_adresse: form.mac_adresse,
+        address_line_1: form.address_line_1 || null,
+        address_line_2: form.address_line_2 || null,
+        comment_1: form.comment_1 || null,
+      })
 
       if (error) throw error
 
-      Alert.alert('Erfolg!', 'FTTX Verstärker wurde erstellt!')
-
-      // Reset
-      setFormData({
-        bundesland: '', gebiet: '', block: '', nummer: '',
-        hec_nummer: '', mac_adresse: '', typ: '',
-        plz: '', ort: '', strasse: '', hausnummer: '',
-        projektant: '', referenz: '', info_location: '',
-      })
+      Alert.alert('Erfolg', 'FTTX Eintrag erstellt!')
+      setForm(INITIAL)
       onSuccess()
       onClose()
     } catch (err: any) {
-      Alert.alert('Fehler', err.message || 'Verstärker konnte nicht erstellt werden')
+      Alert.alert('Fehler', err.message || 'Konnte nicht speichern')
     } finally {
-      setCreating(false)
+      setSaving(false)
     }
   }
+
+  const isComplete = () => form.hec_nummer && form.mac_adresse
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>💡 FTTX (Glasfaser)</Text>
-          <Text style={styles.headerSubtitle}>
-            <Text style={styles.required}>*</Text> = Pflichtfeld
-          </Text>
+          <View>
+            <Text style={styles.headerTitle}>🌐 FTTX</Text>
+            <Text style={styles.headerSubtitle}>ONB/ONH/OLT — 7 Felder</Text>
+          </View>
+          <TouchableOpacity onPress={onClose} style={{ padding: 8 }}>
+            <Text style={{ fontSize: 24, color: Colors.black }}>✕</Text>
+          </TouchableOpacity>
         </View>
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-          
-          {/* Netz-ID */}
-          <Text style={styles.sectionTitle}>📍 Netz-ID</Text>
+          {/* GERÄTE-DATEN */}
+          <SectionHeader icon="🌐" title="Geräte-Daten" />
+          <Field label="HEC# *" error={errors.hec_nummer}>
+            <TextInputField
+              placeholder="z.B. 04_262_A01 - EV_10621798"
+              value={form.hec_nummer}
+              onChangeText={(v) => set('hec_nummer', v)}
+            />
+          </Field>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Bundesland (01-08) <Text style={styles.required}>*</Text></Text>
-            <TextInput style={styles.input} value={formData.bundesland}
-              onChangeText={(v) => updateField('bundesland', v)} placeholder="z.B. 06"
-              placeholderTextColor={Colors.silver600} keyboardType="number-pad" maxLength={2} />
-          </View>
+          <Field label="Name">
+            <TextInputField
+              placeholder="z.B. ONB_Lustenau_01"
+              value={form.name}
+              onChangeText={(v) => set('name', v)}
+            />
+          </Field>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Gebiet <Text style={styles.required}>*</Text></Text>
-            <TextInput style={styles.input} value={formData.gebiet}
-              onChangeText={(v) => updateField('gebiet', v)} placeholder="z.B. 01"
-              placeholderTextColor={Colors.silver600} />
-          </View>
+          <Field label="Type Code [0-7]">
+            <TextInputField
+              placeholder="z.B. 3"
+              value={form.type_code}
+              onChangeText={(v) => set('type_code', v)}
+              keyboardType="number-pad"
+              maxLength={1}
+            />
+          </Field>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Block <Text style={styles.required}>*</Text></Text>
-            <TextInput style={styles.input} value={formData.block}
-              onChangeText={(v) => updateField('block', v)} placeholder="z.B. 02"
-              placeholderTextColor={Colors.silver600} />
-          </View>
+          <Field label="MAC Address *" error={errors.mac_adresse}>
+            <TextInputField
+              placeholder="z.B. 00:24:1F:0B:67:F4"
+              value={form.mac_adresse}
+              onChangeText={(v) => set('mac_adresse', v)}
+            />
+          </Field>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Nummer <Text style={styles.required}>*</Text></Text>
-            <TextInput style={styles.input} value={formData.nummer}
-              onChangeText={(v) => updateField('nummer', v)} placeholder="z.B. 001"
-              placeholderTextColor={Colors.silver600} />
-          </View>
+          {/* ADRESSE */}
+          <SectionHeader icon="📍" title="Adresse" />
+          <Field label="Address Line 1">
+            <TextInputField
+              placeholder="z.B. 6890 Lustenau"
+              value={form.address_line_1}
+              onChangeText={(v) => set('address_line_1', v)}
+            />
+          </Field>
 
-          {/* Hardware */}
-          <Text style={styles.sectionTitle}>⚙️ Hardware</Text>
+          <Field label="Address Line 2">
+            <TextInputField
+              placeholder="z.B. Brändelstr. 28A"
+              value={form.address_line_2}
+              onChangeText={(v) => set('address_line_2', v)}
+            />
+          </Field>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>HEC# (Optional)</Text>
-            <TextInput style={styles.input} value={formData.hec_nummer}
-              onChangeText={(v) => updateField('hec_nummer', v)} placeholder="z.B. HEC12345"
-              placeholderTextColor={Colors.silver600} />
-          </View>
+          {/* KOMMENTAR */}
+          <SectionHeader icon="📝" title="Kommentar" />
+          <Field label="Comment">
+            <TextInputField
+              placeholder="Bemerkung / Kommentar..."
+              value={form.comment_1}
+              onChangeText={(v) => set('comment_1', v)}
+              multiline
+              numberOfLines={4}
+            />
+          </Field>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>MAC Adresse (Optional)</Text>
-            <TextInput style={styles.input} value={formData.mac_adresse}
-              onChangeText={(v) => updateField('mac_adresse', v)} placeholder="z.B. 00:11:22:33:44:55"
-              placeholderTextColor={Colors.silver600} />
-          </View>
-
-          <View style={styles.field}>
-            <Text style={styles.label}>Typ <Text style={styles.required}>*</Text></Text>
-            <View style={styles.pickerContainer}>
-              <Picker selectedValue={formData.typ} onValueChange={(v) => updateField('typ', v)} style={styles.picker}>
-                <Picker.Item label="-- Auswählen --" value="" />
-                <Picker.Item label="ONB" value="ONB" />
-                <Picker.Item label="ONH" value="ONH" />
-                <Picker.Item label="OLT" value="OLT" />
-              </Picker>
-            </View>
-          </View>
-
-          {/* Standort */}
-          <Text style={styles.sectionTitle}>📍 Standort</Text>
-
-          <View style={styles.field}>
-            <Text style={styles.label}>PLZ <Text style={styles.required}>*</Text></Text>
-            <TextInput style={styles.input} value={formData.plz}
-              onChangeText={(v) => updateField('plz', v)} placeholder="z.B. 6300"
-              placeholderTextColor={Colors.silver600} keyboardType="number-pad" />
-          </View>
-
-          <View style={styles.field}>
-            <Text style={styles.label}>Ort <Text style={styles.required}>*</Text></Text>
-            <TextInput style={styles.input} value={formData.ort}
-              onChangeText={(v) => updateField('ort', v)} placeholder="z.B. Wörgl"
-              placeholderTextColor={Colors.silver600} />
-          </View>
-
-          <View style={styles.field}>
-            <Text style={styles.label}>Straße <Text style={styles.required}>*</Text></Text>
-            <TextInput style={styles.input} value={formData.strasse}
-              onChangeText={(v) => updateField('strasse', v)} placeholder="z.B. Hauptstraße"
-              placeholderTextColor={Colors.silver600} />
-          </View>
-
-          <View style={styles.field}>
-            <Text style={styles.label}>Hausnummer <Text style={styles.required}>*</Text></Text>
-            <TextInput style={styles.input} value={formData.hausnummer}
-              onChangeText={(v) => updateField('hausnummer', v)} placeholder="z.B. 123"
-              placeholderTextColor={Colors.silver600} />
-          </View>
-
-          {/* Zusätzliche Infos */}
-          <Text style={styles.sectionTitle}>📝 Zusatz</Text>
-
-          <View style={styles.field}>
-            <Text style={styles.label}>Projektant</Text>
-            <TextInput style={styles.input} value={formData.projektant}
-              onChangeText={(v) => updateField('projektant', v)} placeholder="Name des Projektanten"
-              placeholderTextColor={Colors.silver600} />
-          </View>
-
-          <View style={styles.field}>
-            <Text style={styles.label}>Referenz</Text>
-            <TextInput style={styles.input} value={formData.referenz}
-              onChangeText={(v) => updateField('referenz', v)} placeholder="Referenz-Nummer"
-              placeholderTextColor={Colors.silver600} />
-          </View>
-
-          <View style={styles.field}>
-            <Text style={styles.label}>Info/Location</Text>
-            <TextInput style={[styles.input, styles.textArea]} value={formData.info_location}
-              onChangeText={(v) => updateField('info_location', v)} placeholder="Zusätzliche Informationen..."
-              placeholderTextColor={Colors.silver600} multiline numberOfLines={4} />
-          </View>
-
-          {!canSubmit() && (
-            <View style={styles.warning}>
-              <Text style={styles.warningText}>
-                ⚠️ Pflichtfelder: Bundesland, Gebiet, Block, Nummer, Typ, PLZ, Ort, Straße, Hausnummer
-              </Text>
-            </View>
-          )}
+          <View style={{ height: 20 }} />
         </ScrollView>
 
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.cancelButton} onPress={onClose} disabled={creating}>
-            <Text style={styles.cancelButtonText}>Abbrechen</Text>
+        <View style={styles.footer}>
+          <TouchableOpacity style={styles.cancelBtn} onPress={onClose} disabled={saving}>
+            <Text style={styles.cancelBtnText}>Abbrechen</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.submitButton, (!canSubmit() || creating) && styles.submitButtonDisabled]}
-            onPress={handleSubmit} disabled={!canSubmit() || creating}>
-            <Text style={styles.submitButtonText}>
-              {creating ? '⏳ Erstelle...' : '✅ Erstellen'}
+            style={[styles.submitBtn, !isComplete() && styles.submitBtnDisabled]}
+            onPress={handleSubmit}
+            disabled={!isComplete() || saving}
+          >
+            <Text style={styles.submitBtnText}>
+              {saving ? '⏳ Erstelle...' : '✅ Erstellen'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -245,27 +182,94 @@ export default function CreateFTTXModal({ visible, onClose, onSuccess }: CreateF
   )
 }
 
+// Subcomponents
+function SectionHeader({ icon, title }: { icon: string; title: string }) {
+  return (
+    <View style={{ marginTop: 20, marginBottom: 12 }}>
+      <Text style={{ fontSize: 18, fontWeight: 'bold', color: Colors.black }}>
+        {icon} {title}
+      </Text>
+    </View>
+  )
+}
+
+function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
+  return (
+    <View style={{ marginBottom: 16 }}>
+      <Text style={{ fontSize: 14, fontWeight: '700', color: Colors.black, marginBottom: 8 }}>
+        {label}
+      </Text>
+      {children}
+      {error && <Text style={{ fontSize: 12, color: '#ef4444', marginTop: 4 }}>⚠️ {error}</Text>}
+    </View>
+  )
+}
+
+function TextInputField({ ...props }: any) {
+  return (
+    <TextInput
+      style={{
+        backgroundColor: Colors.white,
+        borderWidth: 2,
+        borderColor: Colors.silver300,
+        borderRadius: 10,
+        padding: 12,
+        fontSize: 16,
+        color: Colors.black,
+        ...Shadows.light,
+      }}
+      placeholderTextColor={Colors.silver600}
+      {...props}
+    />
+  )
+}
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.white },
-  header: { padding: 20, paddingTop: 60, backgroundColor: Colors.white, borderBottomWidth: 2, borderBottomColor: Colors.black, ...Shadows.medium },
-  headerTitle: { fontSize: 28, fontWeight: 'bold', color: Colors.black, marginBottom: 4 },
-  headerSubtitle: { fontSize: 14, color: Colors.silver700, fontWeight: '600' },
-  required: { color: Colors.error || '#ef4444', fontWeight: 'bold' },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    padding: 20,
+    paddingTop: 60,
+    backgroundColor: Colors.white,
+    borderBottomWidth: 2,
+    borderBottomColor: Colors.black,
+    ...Shadows.medium,
+  },
+  headerTitle: { fontSize: 28, fontWeight: 'bold', color: Colors.black },
+  headerSubtitle: { fontSize: 14, color: Colors.silver700, fontWeight: '600', marginTop: 4 },
   scrollView: { flex: 1 },
   scrollContent: { padding: 20 },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: Colors.black, marginTop: 16, marginBottom: 12 },
-  field: { marginBottom: 16 },
-  label: { fontSize: 14, fontWeight: '700', color: Colors.black, marginBottom: 8 },
-  input: { backgroundColor: Colors.white, borderWidth: 2, borderColor: Colors.silver300, borderRadius: 10, padding: 14, fontSize: 16, color: Colors.black, ...Shadows.light },
-  textArea: { minHeight: 100, textAlignVertical: 'top' },
-  pickerContainer: { backgroundColor: Colors.white, borderWidth: 2, borderColor: Colors.silver300, borderRadius: 10, overflow: 'hidden', ...Shadows.light },
-  picker: { height: 50 },
-  warning: { backgroundColor: '#fef3c7', borderWidth: 2, borderColor: '#f59e0b', borderRadius: 10, padding: 16, marginTop: 10 },
-  warningText: { fontSize: 13, color: '#92400e', fontWeight: '600' },
-  buttonContainer: { flexDirection: 'row', padding: 20, gap: 12, borderTopWidth: 2, borderTopColor: Colors.silver300, backgroundColor: Colors.white },
-  cancelButton: { flex: 1, backgroundColor: Colors.white, borderWidth: 2, borderColor: Colors.black, borderRadius: 10, padding: 16, alignItems: 'center', ...Shadows.light },
-  cancelButtonText: { fontSize: 16, fontWeight: 'bold', color: Colors.black },
-  submitButton: { flex: 2, backgroundColor: Colors.gold, borderWidth: 2, borderColor: Colors.goldDark, borderRadius: 10, padding: 16, alignItems: 'center', ...Shadows.gold },
-  submitButtonDisabled: { opacity: 0.5 },
-  submitButtonText: { fontSize: 16, fontWeight: 'bold', color: Colors.black },
+  footer: {
+    flexDirection: 'row',
+    gap: 12,
+    padding: 16,
+    borderTopWidth: 2,
+    borderTopColor: Colors.silver300,
+    backgroundColor: Colors.white,
+  },
+  cancelBtn: {
+    flex: 1,
+    backgroundColor: Colors.white,
+    borderWidth: 2,
+    borderColor: Colors.black,
+    borderRadius: 10,
+    padding: 14,
+    alignItems: 'center',
+    ...Shadows.light,
+  },
+  cancelBtnText: { fontSize: 16, fontWeight: 'bold', color: Colors.black },
+  submitBtn: {
+    flex: 2,
+    backgroundColor: Colors.gold,
+    borderWidth: 2,
+    borderColor: Colors.goldDark,
+    borderRadius: 10,
+    padding: 14,
+    alignItems: 'center',
+    ...Shadows.gold,
+  },
+  submitBtnDisabled: { opacity: 0.5 },
+  submitBtnText: { fontSize: 16, fontWeight: 'bold', color: Colors.black },
 })
