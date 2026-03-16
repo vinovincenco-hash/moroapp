@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
   container: {
     width: '85%',
     maxWidth: 400,
-    backgroundColor: 'white',
+    backgroundColor: Colors.bg,
     borderRadius: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },

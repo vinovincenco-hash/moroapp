@@ -358,7 +358,7 @@ export default function SearchScreen({ onClose, currentDB = 'hfc_862' }: SearchS
 
       {/* Detail/Edit Modal */}
       <Modal visible={!!selectedAmp} animationType="slide" presentationStyle="pageSheet">
-        <View style={{ flex: 1, backgroundColor: Colors.white }}>
+        <View style={{ flex: 1, backgroundColor: Colors.bg }}>
           {/* Detail Header */}
           <View style={styles.header}>
             <View>
@@ -393,18 +393,18 @@ export default function SearchScreen({ onClose, currentDB = 'hfc_862' }: SearchS
           </ScrollView>
 
           {/* Detail Buttons */}
-          <View style={{ padding: 16, borderTopWidth: 2, borderTopColor: '#e5e7eb', backgroundColor: Colors.white, gap: 8 }}>
+          <View style={{ padding: 16, borderTopWidth: 2, borderTopColor: '#e5e7eb', backgroundColor: Colors.bg, gap: 8 }}>
             {editMode ? (
               <View style={{ flexDirection: 'row', gap: 8 }}>
                 <TouchableOpacity
                   style={{ flex: 1, padding: 14, backgroundColor: '#f3f4f6', borderWidth: 2, borderColor: '#d1d5db', borderRadius: 10, alignItems: 'center' }}
                   onPress={() => setEditMode(false)}>
-                  <Text style={{ fontWeight: 'bold', color: Colors.black }}>Abbrechen</Text>
+                  <Text style={{ fontWeight: 'bold', color: Colors.white }}>Abbrechen</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={{ flex: 2, padding: 14, backgroundColor: Colors.gold, borderWidth: 2, borderColor: Colors.goldDark, borderRadius: 10, alignItems: 'center', opacity: saving ? 0.5 : 1 }}
                   onPress={handleSave} disabled={saving}>
-                  <Text style={{ fontWeight: 'bold', color: Colors.black }}>{saving ? '⏳ Speichere...' : '✅ Speichern'}</Text>
+                  <Text style={{ fontWeight: 'bold', color: Colors.white }}>{saving ? '⏳ Speichere...' : '✅ Speichern'}</Text>
                 </TouchableOpacity>
               </View>
             ) : (
@@ -456,7 +456,7 @@ function CascadingPicker({ label, value, options, placeholder, onChange }: {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.silver100,
+    backgroundColor: Colors.bgCard,
   },
   header: {
     flexDirection: 'row',
@@ -464,19 +464,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     paddingTop: 60,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.bg,
     borderBottomWidth: 2,
-    borderBottomColor: Colors.black,
+    borderBottomColor: Colors.gold,
     ...Shadows.medium,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: Colors.black,
+    color: Colors.white,
   },
   headerSubtitle: {
     fontSize: 13,
-    color: Colors.silver700,
+    color: Colors.textSecondary,
     fontWeight: '600',
     marginTop: 2,
   },
@@ -484,16 +484,16 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: Colors.silver100,
+    backgroundColor: Colors.bgCard,
     borderWidth: 2,
-    borderColor: Colors.silver300,
+    borderColor: Colors.border,
     justifyContent: 'center',
     alignItems: 'center',
   },
   closeButtonText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: Colors.black,
+    color: Colors.white,
   },
   scrollView: {
     flex: 1,
@@ -512,16 +512,16 @@ const styles = StyleSheet.create({
   pickerLabel: {
     fontSize: 13,
     fontWeight: '700',
-    color: Colors.silver700,
+    color: Colors.textSecondary,
     marginBottom: 4,
   },
   pickerLabelActive: {
     color: '#1d4ed8',
   },
   pickerContainer: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.bg,
     borderWidth: 2,
-    borderColor: Colors.silver300,
+    borderColor: Colors.border,
     borderRadius: 10,
     overflow: 'hidden',
     ...Shadows.light,
@@ -534,9 +534,9 @@ const styles = StyleSheet.create({
     height: 50,
   },
   resetButton: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.bg,
     borderWidth: 2,
-    borderColor: Colors.silver300,
+    borderColor: Colors.border,
     borderRadius: 10,
     padding: 14,
     alignItems: 'center',
@@ -546,7 +546,7 @@ const styles = StyleSheet.create({
   resetButtonText: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: Colors.silver700,
+    color: Colors.textSecondary,
   },
   resultsContainer: {
     marginBottom: 40,
@@ -554,13 +554,13 @@ const styles = StyleSheet.create({
   resultsTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: Colors.black,
+    color: Colors.white,
     marginBottom: 12,
   },
   resultCard: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.bg,
     borderWidth: 2,
-    borderColor: Colors.silver300,
+    borderColor: Colors.border,
     borderRadius: 10,
     padding: 14,
     marginBottom: 8,
@@ -569,27 +569,27 @@ const styles = StyleSheet.create({
   resultName: {
     fontSize: 15,
     fontWeight: 'bold',
-    color: Colors.black,
+    color: Colors.white,
     marginBottom: 4,
   },
   resultDetail: {
     fontSize: 13,
-    color: Colors.silver700,
+    color: Colors.textSecondary,
     marginBottom: 2,
   },
   input: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.bg,
     borderWidth: 2,
-    borderColor: Colors.silver300,
+    borderColor: Colors.border,
     borderRadius: 10,
     padding: 14,
     fontSize: 16,
-    color: Colors.black,
+    color: Colors.white,
     ...Shadows.light,
   },
   noResults: {
     fontSize: 14,
-    color: Colors.silver600,
+    color: Colors.textMuted,
     fontStyle: 'italic',
     textAlign: 'center',
     padding: 20,

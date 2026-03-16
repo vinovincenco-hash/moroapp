@@ -100,7 +100,7 @@ export default function CreateFTTXModal({ visible, onClose, onSuccess }: CreateF
             <Text style={styles.headerSubtitle}>ONB/ONH/OLT — 7 Felder</Text>
           </View>
           <TouchableOpacity onPress={onClose} style={{ padding: 8 }}>
-            <Text style={{ fontSize: 24, color: Colors.black }}>✕</Text>
+            <Text style={{ fontSize: 24, color: Colors.white }}>✕</Text>
           </TouchableOpacity>
         </View>
 
@@ -203,7 +203,7 @@ export default function CreateFTTXModal({ visible, onClose, onSuccess }: CreateF
 function SectionHeader({ icon, title }: { icon: string; title: string }) {
   return (
     <View style={{ marginTop: 20, marginBottom: 12 }}>
-      <Text style={{ fontSize: 18, fontWeight: 'bold', color: Colors.black }}>
+      <Text style={{ fontSize: 18, fontWeight: 'bold', color: Colors.white }}>
         {icon} {title}
       </Text>
     </View>
@@ -213,7 +213,7 @@ function SectionHeader({ icon, title }: { icon: string; title: string }) {
 function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
   return (
     <View style={{ marginBottom: 16 }}>
-      <Text style={{ fontSize: 14, fontWeight: '700', color: Colors.black, marginBottom: 8 }}>
+      <Text style={{ fontSize: 14, fontWeight: '700', color: Colors.white, marginBottom: 8 }}>
         {label}
       </Text>
       {children}
@@ -226,36 +226,36 @@ function TextInputField({ ...props }: any) {
   return (
     <TextInput
       style={{
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.bg,
         borderWidth: 2,
-        borderColor: Colors.silver300,
+        borderColor: Colors.border,
         borderRadius: 10,
         padding: 12,
         fontSize: 16,
-        color: Colors.black,
+        color: Colors.white,
         ...Shadows.light,
       }}
-      placeholderTextColor={Colors.silver600}
+      placeholderTextColor={Colors.textMuted}
       {...props}
     />
   )
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: Colors.bg },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     padding: 20,
     paddingTop: 60,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.bg,
     borderBottomWidth: 2,
-    borderBottomColor: Colors.black,
+    borderBottomColor: Colors.gold,
     ...Shadows.medium,
   },
-  headerTitle: { fontSize: 28, fontWeight: 'bold', color: Colors.black },
-  headerSubtitle: { fontSize: 14, color: Colors.silver700, fontWeight: '600', marginTop: 4 },
+  headerTitle: { fontSize: 28, fontWeight: 'bold', color: Colors.white },
+  headerSubtitle: { fontSize: 14, color: Colors.textSecondary, fontWeight: '600', marginTop: 4 },
   scrollView: { flex: 1 },
   scrollContent: { padding: 20 },
   footer: {
@@ -264,19 +264,19 @@ const styles = StyleSheet.create({
     padding: 16,
     borderTopWidth: 2,
     borderTopColor: Colors.silver300,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.bg,
   },
   cancelBtn: {
     flex: 1,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.bg,
     borderWidth: 2,
-    borderColor: Colors.black,
+    borderColor: Colors.gold,
     borderRadius: 10,
     padding: 14,
     alignItems: 'center',
     ...Shadows.light,
   },
-  cancelBtnText: { fontSize: 16, fontWeight: 'bold', color: Colors.black },
+  cancelBtnText: { fontSize: 16, fontWeight: 'bold', color: Colors.white },
   submitBtn: {
     flex: 2,
     backgroundColor: Colors.gold,
@@ -288,5 +288,5 @@ const styles = StyleSheet.create({
     ...Shadows.gold,
   },
   submitBtnDisabled: { opacity: 0.5 },
-  submitBtnText: { fontSize: 16, fontWeight: 'bold', color: Colors.black },
+  submitBtnText: { fontSize: 16, fontWeight: 'bold', color: Colors.white },
 })

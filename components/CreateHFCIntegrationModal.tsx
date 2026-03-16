@@ -254,9 +254,9 @@ export default function CreateHFCIntegrationModal({ visible, onClose, onSuccess 
   if (loading) {
     return (
       <Modal visible={visible} animationType="slide">
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.white }}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.bg }}>
           <ActivityIndicator size="large" color={Colors.gold} />
-          <Text style={{ marginTop: 12, color: Colors.silver700 }}>Lädt Optionen...</Text>
+          <Text style={{ marginTop: 12, color: Colors.textSecondary }}>Lädt Optionen...</Text>
         </View>
       </Modal>
     )
@@ -271,7 +271,7 @@ export default function CreateHFCIntegrationModal({ visible, onClose, onSuccess 
             <Text style={styles.headerSubtitle}>0,2/1,2 Umbau — 32 Felder</Text>
           </View>
           <TouchableOpacity onPress={onClose} style={{ padding: 8 }}>
-            <Text style={{ fontSize: 24, color: Colors.black }}>✕</Text>
+            <Text style={{ fontSize: 24, color: Colors.white }}>✕</Text>
           </TouchableOpacity>
         </View>
 
@@ -469,7 +469,7 @@ export default function CreateHFCIntegrationModal({ visible, onClose, onSuccess 
 function SectionHeader({ icon, title }: { icon: string; title: string }) {
   return (
     <View style={{ marginTop: 20, marginBottom: 12 }}>
-      <Text style={{ fontSize: 18, fontWeight: 'bold', color: Colors.black }}>
+      <Text style={{ fontSize: 18, fontWeight: 'bold', color: Colors.white }}>
         {icon} {title}
       </Text>
     </View>
@@ -479,7 +479,7 @@ function SectionHeader({ icon, title }: { icon: string; title: string }) {
 function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
   return (
     <View style={{ marginBottom: 16 }}>
-      <Text style={{ fontSize: 14, fontWeight: '700', color: Colors.black, marginBottom: 8 }}>
+      <Text style={{ fontSize: 14, fontWeight: '700', color: Colors.white, marginBottom: 8 }}>
         {label}
       </Text>
       {children}
@@ -492,16 +492,16 @@ function TextInputField({ ...props }: any) {
   return (
     <TextInput
       style={{
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.bg,
         borderWidth: 2,
-        borderColor: Colors.silver300,
+        borderColor: Colors.border,
         borderRadius: 10,
         padding: 12,
         fontSize: 16,
-        color: Colors.black,
+        color: Colors.white,
         ...Shadows.light,
       }}
-      placeholderTextColor={Colors.silver600}
+      placeholderTextColor={Colors.textMuted}
       {...props}
     />
   )
@@ -510,9 +510,9 @@ function TextInputField({ ...props }: any) {
 function PickerField({ value, onChange, children }: { value: string; onChange: (v: string) => void; children: React.ReactNode }) {
   return (
     <View style={{
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.bg,
       borderWidth: 2,
-      borderColor: Colors.silver300,
+      borderColor: Colors.border,
       borderRadius: 10,
       overflow: 'hidden',
       ...Shadows.light,
@@ -525,16 +525,16 @@ function PickerField({ value, onChange, children }: { value: string; onChange: (
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', padding: 20, paddingTop: 60, backgroundColor: Colors.white, borderBottomWidth: 2, borderBottomColor: Colors.black, ...Shadows.medium },
-  headerTitle: { fontSize: 28, fontWeight: 'bold', color: Colors.black },
-  headerSubtitle: { fontSize: 14, color: Colors.silver700, fontWeight: '600', marginTop: 4 },
+  container: { flex: 1, backgroundColor: Colors.bg },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', padding: 20, paddingTop: 60, backgroundColor: Colors.bg, borderBottomWidth: 2, borderBottomColor: Colors.gold, ...Shadows.medium },
+  headerTitle: { fontSize: 28, fontWeight: 'bold', color: Colors.white },
+  headerSubtitle: { fontSize: 14, color: Colors.textSecondary, fontWeight: '600', marginTop: 4 },
   scrollView: { flex: 1 },
   scrollContent: { padding: 20 },
-  footer: { flexDirection: 'row', gap: 12, padding: 16, borderTopWidth: 2, borderTopColor: Colors.silver300, backgroundColor: Colors.white },
-  cancelBtn: { flex: 1, backgroundColor: Colors.white, borderWidth: 2, borderColor: Colors.black, borderRadius: 10, padding: 14, alignItems: 'center', ...Shadows.light },
-  cancelBtnText: { fontSize: 16, fontWeight: 'bold', color: Colors.black },
+  footer: { flexDirection: 'row', gap: 12, padding: 16, borderTopWidth: 2, borderTopColor: Colors.silver300, backgroundColor: Colors.bg },
+  cancelBtn: { flex: 1, backgroundColor: Colors.bg, borderWidth: 2, borderColor: Colors.gold, borderRadius: 10, padding: 14, alignItems: 'center', ...Shadows.light },
+  cancelBtnText: { fontSize: 16, fontWeight: 'bold', color: Colors.white },
   submitBtn: { flex: 2, backgroundColor: Colors.gold, borderWidth: 2, borderColor: Colors.goldDark, borderRadius: 10, padding: 14, alignItems: 'center', ...Shadows.gold },
   submitBtnDisabled: { opacity: 0.5 },
-  submitBtnText: { fontSize: 16, fontWeight: 'bold', color: Colors.black },
+  submitBtnText: { fontSize: 16, fontWeight: 'bold', color: Colors.white },
 })

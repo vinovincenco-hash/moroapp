@@ -378,7 +378,7 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.silver100,
+    backgroundColor: Colors.bgCard,
   },
   scrollView: {
     flex: 1,
@@ -396,16 +396,16 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 36,
     fontWeight: 'bold',
-    color: Colors.black,
+    color: Colors.white,
     marginBottom: 4,
   },
   headerSubtitle: {
     fontSize: 16,
-    color: Colors.silver700,
+    color: Colors.textSecondary,
     fontWeight: '600',
   },
   logoutButton: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.bg,
     borderWidth: 2,
     borderColor: Colors.black,
     borderRadius: 8,
@@ -416,12 +416,12 @@ const styles = StyleSheet.create({
   logoutButtonText: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: Colors.black,
+    color: Colors.white,
   },
   userInfo: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.bg,
     borderWidth: 2,
-    borderColor: Colors.silver300,
+    borderColor: Colors.border,
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
@@ -429,7 +429,7 @@ const styles = StyleSheet.create({
   },
   userInfoText: {
     fontSize: 14,
-    color: Colors.silver700,
+    color: Colors.textSecondary,
     fontWeight: '600',
   },
   dbSwitcher: {
@@ -439,9 +439,9 @@ const styles = StyleSheet.create({
   },
   dbTab: {
     flex: 1,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.bg,
     borderWidth: 2,
-    borderColor: Colors.silver300,
+    borderColor: Colors.border,
     borderRadius: 8,
     paddingVertical: 12,
     alignItems: 'center',
@@ -455,29 +455,29 @@ const styles = StyleSheet.create({
   dbTabText: {
     fontSize: 12,
     fontWeight: '600',
-    color: Colors.silver700,
+    color: Colors.textSecondary,
   },
   dbTabTextActive: {
-    color: Colors.black,
+    color: Colors.white,
     fontWeight: 'bold',
   },
   searchContainer: {
     marginBottom: 24,
   },
   searchInput: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.bg,
     borderWidth: 2,
-    borderColor: Colors.silver300,
+    borderColor: Colors.border,
     borderRadius: 12,
     padding: 16,
     ...Shadows.light,
   },
   searchPlaceholder: {
     fontSize: 16,
-    color: Colors.silver600,
+    color: Colors.textMuted,
   },
   statsContainer: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.bg,
     borderWidth: 2,
     borderColor: Colors.black,
     borderRadius: 12,
@@ -488,12 +488,12 @@ const styles = StyleSheet.create({
   statsTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: Colors.black,
+    color: Colors.white,
     marginBottom: 16,
   },
   loadingText: {
     fontSize: 14,
-    color: Colors.silver600,
+    color: Colors.textMuted,
     fontStyle: 'italic',
   },
   statRow: {
@@ -504,13 +504,13 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 16,
-    color: Colors.silver700,
+    color: Colors.textSecondary,
     fontWeight: '600',
   },
   statValue: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: Colors.black,
+    color: Colors.white,
   },
   newButton: {
     backgroundColor: Colors.gold,
@@ -530,6 +530,6 @@ const styles = StyleSheet.create({
   newButtonText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: Colors.black,
+    color: Colors.white,
   },
 })

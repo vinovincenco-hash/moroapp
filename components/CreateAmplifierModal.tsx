@@ -327,42 +327,42 @@ export default function CreateAmplifierModal({ visible, onClose, onSuccess, dbTy
             <Text style={styles.label}>Hnr <Text style={styles.required}>*</Text></Text>
             <TextInput style={styles.input} value={formData.hausnummer}
               onChangeText={(v) => updateField('hausnummer', v)} placeholder="z.Bsp. 123"
-              placeholderTextColor={Colors.silver600} />
+              placeholderTextColor={Colors.textMuted} />
           </View>
 
           <View style={styles.field}>
             <Text style={styles.label}>FSK <Text style={styles.required}>*</Text></Text>
             <TextInput style={styles.input} value={formData.fsk_address}
               onChangeText={(v) => updateField('fsk_address', v)} placeholder="z.Bsp. 1234567"
-              placeholderTextColor={Colors.silver600} />
+              placeholderTextColor={Colors.textMuted} />
           </View>
 
           <View style={styles.field}>
             <Text style={styles.label}>Parents</Text>
             <TextInput style={styles.input} value={formData.parents}
               onChangeText={(v) => updateField('parents', v)} placeholder="übergeordneter Verstärker"
-              placeholderTextColor={Colors.silver600} />
+              placeholderTextColor={Colors.textMuted} />
           </View>
 
           <View style={styles.field}>
             <Text style={styles.label}>Verstärkertype</Text>
             <TextInput style={styles.input} value={formData.verstaerker_type}
               onChangeText={(v) => updateField('verstaerker_type', v)} placeholder="z.B. DBC 1200"
-              placeholderTextColor={Colors.silver600} />
+              placeholderTextColor={Colors.textMuted} />
           </View>
 
           <View style={styles.field}>
             <Text style={styles.label}>Firmware</Text>
             <TextInput style={styles.input} value={formData.firmware_version}
               onChangeText={(v) => updateField('firmware_version', v)} placeholder="z.B. V2.22"
-              placeholderTextColor={Colors.silver600} />
+              placeholderTextColor={Colors.textMuted} />
           </View>
 
           <View style={styles.field}>
             <Text style={styles.label}>Bemerkung</Text>
             <TextInput style={[styles.input, styles.textArea]} value={formData.bemerkungen}
               onChangeText={(v) => updateField('bemerkungen', v)} placeholder="Zusätzliche Informationen..."
-              placeholderTextColor={Colors.silver600} multiline numberOfLines={4} />
+              placeholderTextColor={Colors.textMuted} multiline numberOfLines={4} />
           </View>
 
           {/* PHOTOS */}
@@ -387,7 +387,7 @@ export default function CreateAmplifierModal({ visible, onClose, onSuccess, dbTy
                 value={newEntryValue}
                 onChangeText={setNewEntryValue}
                 placeholder={`Neuen Wert eingeben...`}
-                placeholderTextColor={Colors.silver600}
+                placeholderTextColor={Colors.textMuted}
                 autoFocus
               />
               <View style={styles.newEntryButtons}>
@@ -449,11 +449,11 @@ function CascadingField({ label, required, value, options, isCustom, onChange, o
       {isNewValue ? (
         <View style={{ flexDirection: 'row', gap: 8 }}>
           <View style={[styles.input, { flex: 1, backgroundColor: '#f0fdf4', borderColor: '#4ade80' }]}>
-            <Text style={{ fontSize: 16, color: Colors.black, fontWeight: '600' }}>{value}</Text>
+            <Text style={{ fontSize: 16, color: Colors.white, fontWeight: '600' }}>{value}</Text>
           </View>
           <TouchableOpacity onPress={onClear}
-            style={{ backgroundColor: Colors.silver100, borderWidth: 2, borderColor: Colors.silver300, borderRadius: 10, justifyContent: 'center', paddingHorizontal: 14 }}>
-            <Text style={{ fontSize: 16, fontWeight: 'bold', color: Colors.silver700 }}>✕</Text>
+            style={{ backgroundColor: Colors.bgCard, borderWidth: 2, borderColor: Colors.border, borderRadius: 10, justifyContent: 'center', paddingHorizontal: 14 }}>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: Colors.textSecondary }}>✕</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -472,36 +472,36 @@ function CascadingField({ label, required, value, options, isCustom, onChange, o
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
-  header: { padding: 20, paddingTop: 60, backgroundColor: Colors.white, borderBottomWidth: 2, borderBottomColor: Colors.black, ...Shadows.medium },
-  headerTitle: { fontSize: 28, fontWeight: 'bold', color: Colors.black, marginBottom: 4 },
-  headerSubtitle: { fontSize: 14, color: Colors.silver700, fontWeight: '600' },
+  container: { flex: 1, backgroundColor: Colors.bg },
+  header: { padding: 20, paddingTop: 60, backgroundColor: Colors.bg, borderBottomWidth: 2, borderBottomColor: Colors.gold, ...Shadows.medium },
+  headerTitle: { fontSize: 28, fontWeight: 'bold', color: Colors.white, marginBottom: 4 },
+  headerSubtitle: { fontSize: 14, color: Colors.textSecondary, fontWeight: '600' },
   required: { color: Colors.error || '#ef4444', fontWeight: 'bold' },
   scrollView: { flex: 1 },
   scrollContent: { padding: 20 },
   field: { marginBottom: 20 },
-  label: { fontSize: 14, fontWeight: '700', color: Colors.black, marginBottom: 8 },
-  input: { backgroundColor: Colors.white, borderWidth: 2, borderColor: Colors.silver300, borderRadius: 10, padding: 14, fontSize: 16, color: Colors.black, ...Shadows.light },
+  label: { fontSize: 14, fontWeight: '700', color: Colors.white, marginBottom: 8 },
+  input: { backgroundColor: Colors.bg, borderWidth: 2, borderColor: Colors.border, borderRadius: 10, padding: 14, fontSize: 16, color: Colors.white, ...Shadows.light },
   textArea: { minHeight: 100, textAlignVertical: 'top' },
-  pickerContainer: { backgroundColor: Colors.white, borderWidth: 2, borderColor: Colors.silver300, borderRadius: 10, overflow: 'hidden', ...Shadows.light },
+  pickerContainer: { backgroundColor: Colors.bg, borderWidth: 2, borderColor: Colors.border, borderRadius: 10, overflow: 'hidden', ...Shadows.light },
   picker: { height: 50 },
   warning: { backgroundColor: '#fef3c7', borderWidth: 2, borderColor: '#f59e0b', borderRadius: 10, padding: 16, marginTop: 10 },
   warningText: { fontSize: 14, color: '#92400e', fontWeight: '600' },
-  buttonContainer: { flexDirection: 'row', padding: 20, gap: 12, borderTopWidth: 2, borderTopColor: Colors.silver300, backgroundColor: Colors.white },
-  cancelButton: { flex: 1, backgroundColor: Colors.white, borderWidth: 2, borderColor: Colors.black, borderRadius: 10, padding: 16, alignItems: 'center', ...Shadows.light },
-  cancelButtonText: { fontSize: 16, fontWeight: 'bold', color: Colors.black },
+  buttonContainer: { flexDirection: 'row', padding: 20, gap: 12, borderTopWidth: 2, borderTopColor: Colors.silver300, backgroundColor: Colors.bg },
+  cancelButton: { flex: 1, backgroundColor: Colors.bg, borderWidth: 2, borderColor: Colors.gold, borderRadius: 10, padding: 16, alignItems: 'center', ...Shadows.light },
+  cancelButtonText: { fontSize: 16, fontWeight: 'bold', color: Colors.white },
   submitButton: { flex: 2, backgroundColor: Colors.gold, borderWidth: 2, borderColor: Colors.goldDark, borderRadius: 10, padding: 16, alignItems: 'center', ...Shadows.gold },
   submitButtonDisabled: { opacity: 0.5 },
-  submitButtonText: { fontSize: 16, fontWeight: 'bold', color: Colors.black },
+  submitButtonText: { fontSize: 16, fontWeight: 'bold', color: Colors.white },
   // New Entry Dialog
   newEntryOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', zIndex: 100 },
-  newEntryModal: { backgroundColor: Colors.white, borderWidth: 2, borderColor: Colors.black, borderRadius: 16, padding: 24, width: '85%', ...Shadows.medium },
-  newEntryTitle: { fontSize: 20, fontWeight: 'bold', color: Colors.black, marginBottom: 16 },
-  newEntryInput: { backgroundColor: Colors.white, borderWidth: 2, borderColor: Colors.silver300, borderRadius: 10, padding: 14, fontSize: 16, color: Colors.black, marginBottom: 16, ...Shadows.light },
+  newEntryModal: { backgroundColor: Colors.bg, borderWidth: 2, borderColor: Colors.gold, borderRadius: 16, padding: 24, width: '85%', ...Shadows.medium },
+  newEntryTitle: { fontSize: 20, fontWeight: 'bold', color: Colors.white, marginBottom: 16 },
+  newEntryInput: { backgroundColor: Colors.bg, borderWidth: 2, borderColor: Colors.border, borderRadius: 10, padding: 14, fontSize: 16, color: Colors.white, marginBottom: 16, ...Shadows.light },
   newEntryButtons: { flexDirection: 'row', gap: 12 },
-  cancelBtn: { flex: 1, backgroundColor: Colors.silver100, borderWidth: 2, borderColor: Colors.silver300, borderRadius: 10, padding: 14, alignItems: 'center' },
-  cancelBtnText: { fontSize: 14, fontWeight: 'bold', color: Colors.silver700 },
+  cancelBtn: { flex: 1, backgroundColor: Colors.bgCard, borderWidth: 2, borderColor: Colors.border, borderRadius: 10, padding: 14, alignItems: 'center' },
+  cancelBtnText: { fontSize: 14, fontWeight: 'bold', color: Colors.textSecondary },
   confirmBtn: { flex: 2, backgroundColor: Colors.gold, borderWidth: 2, borderColor: Colors.goldDark, borderRadius: 10, padding: 14, alignItems: 'center' },
-  confirmBtnText: { fontSize: 14, fontWeight: 'bold', color: Colors.black },
+  confirmBtnText: { fontSize: 14, fontWeight: 'bold', color: Colors.white },
   btnDisabled: { opacity: 0.5 },
 })

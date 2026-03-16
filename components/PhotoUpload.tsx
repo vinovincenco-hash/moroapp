@@ -133,7 +133,7 @@ export default function PhotoUpload({ photos, onChange, required = true }: Props
 const styles = StyleSheet.create({
   container: { marginTop: 16, marginBottom: 8 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  title: { fontSize: 18, fontWeight: 'bold', color: Colors.black },
+  title: { fontSize: 18, fontWeight: 'bold', color: Colors.white },
   requiredHint: { fontSize: 12, color: '#ef4444', fontWeight: '600' },
   completeHint: { fontSize: 12, color: '#16a34a', fontWeight: '600' },
   slot: { marginBottom: 12 },
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   slotIcon: { fontSize: 32 },
-  slotLabel: { fontSize: 15, fontWeight: '700', color: Colors.black },
+  slotLabel: { fontSize: 15, fontWeight: '700', color: Colors.white },
   slotDesc: { fontSize: 13, color: '#6b7280', marginTop: 2 },
   slotHint: { fontSize: 11, color: '#9ca3af', marginTop: 4 },
   previewContainer: {
