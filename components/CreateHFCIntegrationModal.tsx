@@ -230,10 +230,7 @@ export default function CreateHFCIntegrationModal({ visible, onClose, onSuccess 
         i_entzerrer: form.i_entzerrer ? form.i_entzerrer.replace(',', '.') : null,
         a_pegel: form.a_pegel || null,
         a_rw_pegel: form.a_rw_pegel || null,
-        // RW Module
-        rw_a1: form.rw_a1 ? parseFloat(form.rw_a1) : 0,
-        rw_a2: form.rw_a2 ? parseFloat(form.rw_a2) : 0,
-        rw_a3: form.rw_a3 ? parseFloat(form.rw_a3) : 0,
+        // RW Module (nur combined senden, wie AmpXWeb)
         rw_combined: rw_combined,
         a3_eingang: form.a3_eingang || null,
         tab_value: form.tab_value || null,
