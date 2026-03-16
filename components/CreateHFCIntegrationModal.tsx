@@ -518,16 +518,16 @@ function TextInputField({ ...props }: any) {
   return (
     <TextInput
       style={{
-        backgroundColor: Colors.bg,
+        backgroundColor: '#e5e7eb',
         borderWidth: 2,
-        borderColor: Colors.border,
+        borderColor: '#d1d5db',
         borderRadius: 10,
         padding: 12,
         fontSize: 16,
-        color: Colors.white,
+        color: '#000000',
         ...Shadows.light,
       }}
-      placeholderTextColor={Colors.textMuted}
+      placeholderTextColor='#6b7280'
       {...props}
     />
   )
