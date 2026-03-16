@@ -16,7 +16,7 @@ export const EMPTY_PHOTOS: PhotoSet = {
   standortansicht: null,
 }
 
-const MAX_SIZE_BYTES = 1 * 1024 * 1024 // 1 MB
+const MAX_SIZE_BYTES = 3 * 1024 * 1024 // 3 MB
 
 interface PhotoSlot {
   key: keyof PhotoSet
@@ -54,7 +54,7 @@ export default function PhotoUpload({ photos, onChange, required = true }: Props
       if (!file) return
 
       if (file.size > MAX_SIZE_BYTES) {
-        setErrors(prev => ({ ...prev, [key]: `Zu groß! Max 1MB (${(file.size / 1024 / 1024).toFixed(1)}MB)` }))
+        setErrors(prev => ({ ...prev, [key]: `Zu groß! Max 3MB (${(file.size / 1024 / 1024).toFixed(1)}MB)` }))
         return
       }
 
@@ -117,7 +117,7 @@ export default function PhotoUpload({ photos, onChange, required = true }: Props
               <View>
                 <Text style={styles.slotLabel}>{slot.label}</Text>
                 <Text style={styles.slotDesc}>{slot.desc}</Text>
-                <Text style={styles.slotHint}>Max 1 MB · Tippen zum Fotografieren</Text>
+                <Text style={styles.slotHint}>Max 3 MB · Tippen zum Fotografieren</Text>
               </View>
             </TouchableOpacity>
           )}
