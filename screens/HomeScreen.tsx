@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react'
 import { supabase, DatabaseType, getTableName, getDisplayName } from '../lib/supabase'
 import { Colors, Shadows } from '../constants/Colors'
 import CreateAmplifierModal from '../components/CreateAmplifierModal'
+import CreateHFCIntegrationModal from '../components/CreateHFCIntegrationModal'
+import CreateFTTXModal from '../components/CreateFTTXModal'
+import FormTypeSelector from '../components/FormTypeSelector'
 import SearchScreen from './SearchScreen'
 
 interface HomeScreenProps {
@@ -20,7 +23,8 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
     lienz: 0,
   })
   const [loading, setLoading] = useState(true)
-  const [modalVisible, setModalVisible] = useState(false)
+  const [formSelectorVisible, setFormSelectorVisible] = useState(false)
+  const [selectedFormType, setSelectedFormType] = useState<DatabaseType | null>(null)
   const [searchVisible, setSearchVisible] = useState(false)
   const [userEmail, setUserEmail] = useState('')
 
@@ -210,7 +214,7 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
         {/* New Amplifier Button */}
         <TouchableOpacity 
           style={styles.newButton}
-          onPress={() => setModalVisible(true)}
+          onPress={() => setFormSelectorVisible(true)}
           activeOpacity={0.8}
         >
           <Text style={styles.newButtonIcon}>➕</Text>
@@ -218,20 +222,57 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
         </TouchableOpacity>
       </ScrollView>
 
+      {/* Form Type Selector */}
+      <FormTypeSelector
+        visible={formSelectorVisible}
+        onSelect={(type) => {
+          setSelectedFormType(type)
+          setFormSelectorVisible(false)
+        }}
+        onClose={() => setFormSelectorVisible(false)}
+      />
+
       {/* Search Screen */}
       <Modal visible={searchVisible} animationType="slide">
-        <SearchScreen onClose={() => setSearchVisible(false)} />
+        <SearchScreen onClose={() => setSearchVisible(false)} currentDB={currentDB} />
       </Modal>
 
-      {/* Create Amplifier Modal */}
-      <CreateAmplifierModal
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-        onSuccess={() => {
-          fetchStats() // Refresh stats after creating
-        }}
-        dbType={currentDB}
-      />
+      {/* Create Amplifier Modal (HFC 862MHZ) */}
+      {selectedFormType === 'hfc_862' && (
+        <CreateAmplifierModal
+          visible={selectedFormType === 'hfc_862'}
+          onClose={() => setSelectedFormType(null)}
+          onSuccess={() => {
+            fetchStats()
+            setSelectedFormType(null)
+          }}
+          dbType="hfc_862"
+        />
+      )}
+
+      {/* Create HFC Integration Modal */}
+      {selectedFormType === 'hfc_integration' && (
+        <CreateHFCIntegrationModal
+          visible={selectedFormType === 'hfc_integration'}
+          onClose={() => setSelectedFormType(null)}
+          onSuccess={() => {
+            fetchStats()
+            setSelectedFormType(null)
+          }}
+        />
+      )}
+
+      {/* Create FTTX Modal */}
+      {selectedFormType === 'fttx' && (
+        <CreateFTTXModal
+          visible={selectedFormType === 'fttx'}
+          onClose={() => setSelectedFormType(null)}
+          onSuccess={() => {
+            fetchStats()
+            setSelectedFormType(null)
+          }}
+        />
+      )}
     </View>
   )
 }
