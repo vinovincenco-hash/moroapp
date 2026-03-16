@@ -384,7 +384,7 @@ export default function SearchScreen({ onClose, currentDB = 'hfc_862' }: SearchS
                     multiline={['bemerkungen', 'comment_1', 'kommentar'].includes(field.key)}
                   />
                 ) : (
-                  <Text style={{ fontSize: 15, fontWeight: '500', color: (selectedAmp as any)?.[field.key] ? Colors.black : '#d1d5db' }}>
+                  <Text style={{ fontSize: 15, fontWeight: '500', color: (selectedAmp as any)?.[field.key] ? Colors.black : Colors.border }}>
                     {(selectedAmp as any)?.[field.key] || '–'}
                   </Text>
                 )}
@@ -393,11 +393,11 @@ export default function SearchScreen({ onClose, currentDB = 'hfc_862' }: SearchS
           </ScrollView>
 
           {/* Detail Buttons */}
-          <View style={{ padding: 16, borderTopWidth: 2, borderTopColor: '#e5e7eb', backgroundColor: Colors.bg, gap: 8 }}>
+          <View style={{ padding: 16, borderTopWidth: 2, borderTopColor: Colors.border, backgroundColor: Colors.bg, gap: 8 }}>
             {editMode ? (
               <View style={{ flexDirection: 'row', gap: 8 }}>
                 <TouchableOpacity
-                  style={{ flex: 1, padding: 14, backgroundColor: '#f3f4f6', borderWidth: 2, borderColor: '#d1d5db', borderRadius: 10, alignItems: 'center' }}
+                  style={{ flex: 1, padding: 14, backgroundColor: Colors.bgInput, borderWidth: 2, borderColor: Colors.border, borderRadius: 10, alignItems: 'center' }}
                   onPress={() => setEditMode(false)}>
                   <Text style={{ fontWeight: 'bold', color: Colors.white }}>Abbrechen</Text>
                 </TouchableOpacity>
@@ -409,7 +409,7 @@ export default function SearchScreen({ onClose, currentDB = 'hfc_862' }: SearchS
               </View>
             ) : (
               <TouchableOpacity
-                style={{ padding: 14, backgroundColor: '#3b82f6', borderRadius: 10, alignItems: 'center' }}
+                style={{ padding: 14, backgroundColor: Colors.info, borderRadius: 10, alignItems: 'center' }}
                 onPress={() => setEditMode(true)}>
                 <Text style={{ fontWeight: 'bold', color: 'white', fontSize: 16 }}>✏️ Bearbeiten</Text>
               </TouchableOpacity>
@@ -527,8 +527,8 @@ const styles = StyleSheet.create({
     ...Shadows.light,
   },
   pickerContainerActive: {
-    borderColor: '#3b82f6',
-    backgroundColor: '#eff6ff',
+    borderColor: Colors.info,
+    backgroundColor: Colors.bgInput,
   },
   picker: {
     height: 50,

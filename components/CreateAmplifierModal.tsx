@@ -448,7 +448,7 @@ function CascadingField({ label, required, value, options, isCustom, onChange, o
 
       {isNewValue ? (
         <View style={{ flexDirection: 'row', gap: 8 }}>
-          <View style={[styles.input, { flex: 1, backgroundColor: '#f0fdf4', borderColor: '#4ade80' }]}>
+          <View style={[styles.input, { flex: 1, backgroundColor: Colors.successLight, borderColor: Colors.success }]}>
             <Text style={{ fontSize: 16, color: Colors.white, fontWeight: '600' }}>{value}</Text>
           </View>
           <TouchableOpacity onPress={onClear}
@@ -457,7 +457,7 @@ function CascadingField({ label, required, value, options, isCustom, onChange, o
           </TouchableOpacity>
         </View>
       ) : (
-        <View style={[styles.pickerContainer, hasValue && { borderColor: '#3b82f6', backgroundColor: '#eff6ff' }]}>
+        <View style={[styles.pickerContainer, hasValue && { borderColor: Colors.info, backgroundColor: Colors.bgInput }]}>
           <Picker selectedValue={value} onValueChange={onChange} style={styles.picker}>
             <Picker.Item label={`-- ${label} auswählen --`} value="" />
             {options.map((opt) => (
@@ -476,7 +476,7 @@ const styles = StyleSheet.create({
   header: { padding: 20, paddingTop: 60, backgroundColor: Colors.bg, borderBottomWidth: 2, borderBottomColor: Colors.gold, ...Shadows.medium },
   headerTitle: { fontSize: 28, fontWeight: 'bold', color: Colors.white, marginBottom: 4 },
   headerSubtitle: { fontSize: 14, color: Colors.textSecondary, fontWeight: '600' },
-  required: { color: Colors.error || '#ef4444', fontWeight: 'bold' },
+  required: { color: Colors.error || Colors.error, fontWeight: 'bold' },
   scrollView: { flex: 1 },
   scrollContent: { padding: 20 },
   field: { marginBottom: 20 },
@@ -485,7 +485,7 @@ const styles = StyleSheet.create({
   textArea: { minHeight: 100, textAlignVertical: 'top' },
   pickerContainer: { backgroundColor: Colors.bg, borderWidth: 2, borderColor: Colors.border, borderRadius: 10, overflow: 'hidden', ...Shadows.light },
   picker: { height: 50 },
-  warning: { backgroundColor: '#fef3c7', borderWidth: 2, borderColor: '#f59e0b', borderRadius: 10, padding: 16, marginTop: 10 },
+  warning: { backgroundColor: Colors.warningLight, borderWidth: 2, borderColor: Colors.warning, borderRadius: 10, padding: 16, marginTop: 10 },
   warningText: { fontSize: 14, color: '#92400e', fontWeight: '600' },
   buttonContainer: { flexDirection: 'row', padding: 20, gap: 12, borderTopWidth: 2, borderTopColor: Colors.silver300, backgroundColor: Colors.bg },
   cancelButton: { flex: 1, backgroundColor: Colors.bg, borderWidth: 2, borderColor: Colors.gold, borderRadius: 10, padding: 16, alignItems: 'center', ...Shadows.light },

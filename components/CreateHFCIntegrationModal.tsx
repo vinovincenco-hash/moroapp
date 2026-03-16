@@ -483,7 +483,7 @@ function Field({ label, error, children }: { label: string; error?: string; chil
         {label}
       </Text>
       {children}
-      {error && <Text style={{ fontSize: 12, color: '#ef4444', marginTop: 4 }}>⚠️ {error}</Text>}
+      {error && <Text style={{ fontSize: 12, color: Colors.error, marginTop: 4 }}>⚠️ {error}</Text>}
     </View>
   )
 }

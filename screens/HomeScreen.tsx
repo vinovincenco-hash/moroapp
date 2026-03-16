@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar'
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, ScrollView, Modal } from 'react-native'
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, ScrollView, Modal, Image } from 'react-native'
 import { useEffect, useState } from 'react'
 import { supabase, DatabaseType, getTableName, getDisplayName } from '../lib/supabase'
 import { Colors, Shadows } from '../constants/Colors'
@@ -168,15 +168,21 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
 
   return (
     <View style={styles.container}>
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
       
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+        {/* Logo */}
+        <View style={styles.logoRow}>
+          <Image
+            source={require('../assets/ampxapp-logo.png')}
+            style={styles.headerLogo}
+            resizeMode="contain"
+          />
+        </View>
+
         {/* Header */}
         <View style={styles.header}>
-          <View>
-            <Text style={styles.headerTitle}>AmpXApp</Text>
-            <Text style={styles.headerSubtitle}>Verstärker Management</Text>
-          </View>
+          <View />
           <TouchableOpacity
             style={styles.logoutButton}
             onPress={handleLogout}
@@ -378,31 +384,28 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.bgCard,
+    backgroundColor: Colors.bg,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     padding: 20,
-    paddingTop: 60,
+    paddingTop: 50,
+  },
+  logoRow: {
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  headerLogo: {
+    width: 200,
+    height: 100,
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     alignItems: 'flex-start',
     marginBottom: 16,
-  },
-  headerTitle: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: Colors.white,
-    marginBottom: 4,
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    color: Colors.textSecondary,
-    fontWeight: '600',
   },
   logoutButton: {
     backgroundColor: Colors.bg,
@@ -458,7 +461,7 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
   },
   dbTabTextActive: {
-    color: Colors.white,
+    color: Colors.black,
     fontWeight: 'bold',
   },
   searchContainer: {
@@ -477,40 +480,43 @@ const styles = StyleSheet.create({
     color: Colors.textMuted,
   },
   statsContainer: {
-    backgroundColor: Colors.bg,
-    borderWidth: 2,
-    borderColor: Colors.black,
-    borderRadius: 12,
+    backgroundColor: Colors.bgCard,
+    borderWidth: 1,
+    borderColor: Colors.borderGold,
+    borderRadius: 16,
     padding: 20,
     marginBottom: 24,
-    ...Shadows.medium,
+    ...Shadows.gold,
   },
   statsTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: Colors.white,
+    fontSize: 18,
+    fontWeight: '800',
+    color: Colors.gold,
     marginBottom: 16,
+    letterSpacing: 0.5,
   },
   loadingText: {
     fontSize: 14,
-    color: Colors.textMuted,
+    color: Colors.gold,
     fontStyle: 'italic',
   },
   statRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(212, 175, 55, 0.1)',
   },
   statLabel: {
-    fontSize: 16,
+    fontSize: 15,
     color: Colors.textSecondary,
     fontWeight: '600',
   },
   statValue: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: Colors.white,
+    color: Colors.gold,
   },
   newButton: {
     backgroundColor: Colors.gold,
@@ -530,6 +536,6 @@ const styles = StyleSheet.create({
   newButtonText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: Colors.white,
+    color: Colors.black,
   },
 })

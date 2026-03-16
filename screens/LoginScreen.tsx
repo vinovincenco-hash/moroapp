@@ -41,7 +41,7 @@ export default function LoginScreen({ onLoginSuccess }: Props) {
         {/* Logo */}
         <View style={styles.logoContainer}>
           <Image
-            source={require('../assets/ampxapp-logo.jpg')}
+            source={require('../assets/ampxapp-logo.png')}
             style={styles.logo}
             resizeMode="contain"
           />
