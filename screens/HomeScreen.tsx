@@ -251,7 +251,7 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
             <>
               <View style={styles.statRow}>
                 <Text style={styles.statLabel}>Total:</Text>
-                <Text style={styles.statValue}>{stats.total.toLocaleString()}</Text>
+                <Text style={styles.statValue}>{(stats.total || 0).toLocaleString()}</Text>
               </View>
               
               {/* HFC 862: Show HUB breakdown */}
@@ -259,19 +259,19 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
                 <>
                   <View style={styles.statRow}>
                     <Text style={styles.statLabel}>• Wörgl:</Text>
-                    <Text style={styles.statValue}>{stats.worgl.toLocaleString()}</Text>
+                    <Text style={styles.statValue}>{(stats.worgl || 0).toLocaleString()}</Text>
                   </View>
                   <View style={styles.statRow}>
                     <Text style={styles.statLabel}>• Schwaz:</Text>
-                    <Text style={styles.statValue}>{stats.schwaz.toLocaleString()}</Text>
+                    <Text style={styles.statValue}>{(stats.schwaz || 0).toLocaleString()}</Text>
                   </View>
                   <View style={styles.statRow}>
                     <Text style={styles.statLabel}>• St.Johann:</Text>
-                    <Text style={styles.statValue}>{stats.stJohann.toLocaleString()}</Text>
+                    <Text style={styles.statValue}>{(stats.stJohann || 0).toLocaleString()}</Text>
                   </View>
                   <View style={styles.statRow}>
                     <Text style={styles.statLabel}>• Lienz:</Text>
-                    <Text style={styles.statValue}>{stats.lienz.toLocaleString()}</Text>
+                    <Text style={styles.statValue}>{(stats.lienz || 0).toLocaleString()}</Text>
                   </View>
                 </>
               )}
@@ -281,11 +281,11 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
                 <>
                   <View style={styles.statRow}>
                     <Text style={styles.statLabel}>• LV (Leitungsverstärker):</Text>
-                    <Text style={styles.statValue}>{stats.lv.toLocaleString()}</Text>
+                    <Text style={styles.statValue}>{(stats.lv || 0).toLocaleString()}</Text>
                   </View>
                   <View style={styles.statRow}>
                     <Text style={styles.statLabel}>• EV (Endverstärker):</Text>
-                    <Text style={styles.statValue}>{stats.ev.toLocaleString()}</Text>
+                    <Text style={styles.statValue}>{(stats.ev || 0).toLocaleString()}</Text>
                   </View>
                   <View style={styles.statRow}>
                     <Text style={styles.statLabel}>• LV Quote:</Text>
@@ -299,15 +299,15 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
                 <>
                   <View style={styles.statRow}>
                     <Text style={styles.statLabel}>• ONB (Optical Network Bridge):</Text>
-                    <Text style={styles.statValue}>{stats.onb.toLocaleString()}</Text>
+                    <Text style={styles.statValue}>{(stats.onb || 0).toLocaleString()}</Text>
                   </View>
                   <View style={styles.statRow}>
                     <Text style={styles.statLabel}>• ONH (Optical Network Hub):</Text>
-                    <Text style={styles.statValue}>{stats.onh.toLocaleString()}</Text>
+                    <Text style={styles.statValue}>{(stats.onh || 0).toLocaleString()}</Text>
                   </View>
                   <View style={styles.statRow}>
                     <Text style={styles.statLabel}>• OLT (Optical Line Terminal):</Text>
-                    <Text style={styles.statValue}>{stats.olt.toLocaleString()}</Text>
+                    <Text style={styles.statValue}>{(stats.olt || 0).toLocaleString()}</Text>
                   </View>
                 </>
               )}
