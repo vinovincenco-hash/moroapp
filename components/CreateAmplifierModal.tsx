@@ -31,6 +31,24 @@ const EMPTY_OPTIONS: CascadingOptions = {
   hubs: [], nodes_neu: [], plzs: [], orte: [], strassen: [], verstaerker_bezeichnungen: [],
 }
 
+const VERSTAERKER_TYPE_OPTIONS = [
+  'EV/DBC1200/1,2 GHZ/1', 'EV/DBC1200/1,2 GHZ/1-Flat', 'EV/DBC1200/1,2 GHZ/2', 'EV/DBC1200/1,2 GHZ/2-Flat',
+  'EV/DBC1200/1,0 GHZ/1', 'EV/DBC1200/1,0 GHZ/2', 'EV/R', 'EV/S', 'EV/T',
+  'EV/FM222/1', 'EV/FM222/2', 'EV/FM222/1/Ortsspeisung', 'EV/FM222/2/Ortsspeisung',
+  'EV/FM222/1/Ingress', 'EV/FM222/2/Ingress',
+  'EV/DA1000/1', 'EV/DA1000/2', 'EV/DA1000/1/Ortsspeisung', 'EV/DA1000/2/Ortsspeisung',
+  'EV/DA1000/1/Ingress', 'EV/DA1000/2/Ingress',
+  'LV/DBC1200/1,2 GHZ/0', 'LV/DBC1200/1,2 GHZ/1', 'LV/DBC1200/1,2 GHZ/2', 'LV/DBC1200/1,2 GHZ/3',
+  'LV/DBC1200/1,2 GHZ/4', 'LV/DBC1200/1,2 GHZ', 'LV/DBC1200/1,2 GHZ/0-38dB', 'LV/DBC1200/1,2 GHZ/1-38dB',
+  'LV/DBC1200/1,2 GHZ/2-38dB', 'LV/DBC1200/1,2 GHZ/3-38dB', 'LV/DBC1200/1,2 GHZ/4-38dB', 'LV/DBC1200/1,2 GHZ/-38dB',
+  'LV/DBC1200/1,0 GHZ/0', 'LV/DBC1200/1,0 GHZ/1', 'LV/DBC1200/1,0 GHZ/2', 'LV/DBC1200/1,0 GHZ/3', 'LV/DBC1200/1,0 GHZ/4',
+  'LV/FM3111/0', 'LV/FM3111/1', 'LV/FM3111/2', 'LV/FM3111/3', 'LV/FM3111/4',
+  'LV/DA1000/0', 'LV/DA1000/1', 'LV/DA1000/2', 'LV/DA1000/3', 'LV/DA1000/4',
+  'LV/A', 'LV/B', 'LV/C', 'LV/E', 'LV/G', 'RV',
+  'ONB 1261 B1F-15-65 F', 'LV/MAX030G', 'LV/MAX037', 'LV/MAX037G', 'LV/MAX236', 'LV/MAX236G',
+  'EV/FM400', 'LV/FM400', 'LV/EV/DBD1200/1,2 GHZ',
+]
+
 export default function CreateAmplifierModal({ visible, onClose, onSuccess, dbType = 'hfc_862' }: CreateAmplifierModalProps) {
   // Route to correct modal based on database type
   if (dbType === 'hfc_integration') {
@@ -346,9 +364,18 @@ export default function CreateAmplifierModal({ visible, onClose, onSuccess, dbTy
 
           <View style={styles.field}>
             <Text style={styles.label}>Verstärkertype</Text>
-            <TextInput style={styles.input} value={formData.verstaerker_type}
-              onChangeText={(v) => updateField('verstaerker_type', v)} placeholder="z.B. DBC 1200"
-              placeholderTextColor={Colors.textMuted} />
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={formData.verstaerker_type}
+                onValueChange={(v) => updateField('verstaerker_type', v)}
+                style={styles.picker}
+              >
+                <Picker.Item label="-- Verstärkertype auswählen --" value="" />
+                {VERSTAERKER_TYPE_OPTIONS.map((type) => (
+                  <Picker.Item key={type} label={type} value={type} />
+                ))}
+              </Picker>
+            </View>
           </View>
 
           <View style={styles.field}>
