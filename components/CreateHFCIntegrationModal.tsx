@@ -1,7 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Modal, View, Text, TextInput, TouchableOpacity, ScrollView,
-  StyleSheet, KeyboardAvoidingView, Platform, Alert,
+  StyleSheet, KeyboardAvoidingView, Platform, Alert, ActivityIndicator,
 } from 'react-native'
 import { Picker } from '@react-native-picker/picker'
 import { Colors, Shadows } from '../constants/Colors'
@@ -13,281 +13,432 @@ interface CreateHFCIntegrationModalProps {
   onSuccess: () => void
 }
 
+const BUNDESLAENDER = [
+  { value: '01', label: '01 – Wien' },
+  { value: '02', label: '02 – Niederösterreich' },
+  { value: '03', label: '03 – Steiermark' },
+  { value: '04', label: '04 – Tirol' },
+  { value: '05', label: '05 – Vorarlberg' },
+  { value: '06', label: '06 – Kärnten' },
+  { value: '08', label: '08 – Oberösterreich' },
+]
+
+const PROJEKTANTEN_DEFAULT = [
+  'Wetchy Schulz', 'Buttinger', 'Tury', 'Knotzinger', 'Helm', 'Bödi',
+  'Pasterniak', 'Konrad R.Figl', 'Manzl Christian', 'Hakan Karakas',
+  'Jace', 'Geri Dominguez', 'Daniel'
+]
+
+const LOCATIONS_DEFAULT = [
+  'vor dem Haus', 'hinter dem Haus', 'Keller', 'Dachboden', 'Tiefgarage', 'Stiegenhaus'
+]
+
+// Dropdown Options (from MoroWeb)
+const ATTENUATOR_OPTIONS = Array.from({ length: 64 }, (_, i) => (i * 0.5).toFixed(1))
+const EQUALISER_OPTIONS = Array.from({ length: 37 }, (_, i) => (i * 0.5).toFixed(1))
+const I_DAEMPFER_OPTIONS = ['0', '0,5', '1,0', '1,5', '2,0', '2,5', '3,0', '3,5', '4,0', '4,5', '5,0', '5,5', '6,0', '6,5', '7,0', '7,5', '8,0', '8,5', '9,0', '9,5', '10,0', '10,5', '11,0', '11,5', '12,0', '12,5', '13,0', '13,5', '14,0', '14,5', '15,0']
+const I_ENTZERRER_OPTIONS = I_DAEMPFER_OPTIONS
+const PRODUKTIONSDATUM_OPTIONS = ['2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025', '2026']
+const A3_EINGANG_OPTIONS = ['0', '4/4', '2/12', '5/8', '1/8', '1/6']
+const TAB_OPTIONS = ['0', '4/4', '2/12', '5/8', '1/8', '1/6']
+const FIRMWARE_OPTIONS = ['2.00', '2.22', '1.06', '2.40', '2.60']
+const FSK_261_OPTIONS = ['Ja', 'Nein']
+
+interface FormData {
+  // Netzstruktur
+  bundesland: string
+  gebiet: string
+  block: string
+  nummer: string
+  // Standort
+  plz: string
+  ort: string
+  strasse: string
+  hausnummer: string
+  // Verstärkertyp
+  lv_ev: string
+  typ_hfc: string
+  typ_gis: string
+  bauteilname: string
+  // Hardware
+  fsk_adresse: string
+  firmware_version: string
+  fsk_261_geaendert: string
+  // Technische Parameter - Pre-stage
+  pre_stage_attenuator: string
+  pre_stage_equaliser: string
+  // Technische Parameter - Inter-stage
+  i_daempfer: string
+  i_entzerrer: string
+  a_pegel: string
+  a_rw_pegel: string
+  // RW Module
+  rw_a1: string
+  rw_a2: string
+  rw_a3: string
+  a3_eingang: string
+  tab_value: string
+  // Datum
+  produktionsdatum: string
+  aenderungsdatum: string
+  referenz: string
+  // Zusatzfelder
+  projektant: string
+  info_location: string
+  kommentar: string
+}
+
+const INITIAL: FormData = {
+  bundesland: '', gebiet: '', block: '', nummer: '',
+  plz: '', ort: '', strasse: '', hausnummer: '',
+  lv_ev: '', typ_hfc: '', typ_gis: '', bauteilname: '',
+  fsk_adresse: '', firmware_version: '', fsk_261_geaendert: '',
+  pre_stage_attenuator: '', pre_stage_equaliser: '',
+  i_daempfer: '', i_entzerrer: '', a_pegel: '', a_rw_pegel: '',
+  rw_a1: '0', rw_a2: '0', rw_a3: '0', a3_eingang: '', tab_value: '',
+  produktionsdatum: '', aenderungsdatum: '', referenz: '0/0/0',
+  projektant: '', info_location: '', kommentar: '',
+}
+
 export default function CreateHFCIntegrationModal({ visible, onClose, onSuccess }: CreateHFCIntegrationModalProps) {
-  const [formData, setFormData] = useState({
-    bundesland: '',
-    gebiet: '',
-    block: '',
-    nummer: '',
-    lv_ev: '' as 'LV' | 'EV' | '',
-    typ_hfc: '',
-    plz: '',
-    ort: '',
-    strasse: '',
-    hausnummer: '',
-    fsk_adresse: '',
-    pre_stage_attenuator: '',
-    pre_stage_equaliser: '',
-    rw_a1: '',
-    rw_a2: '',
-    rw_a3: '',
-    referenz: '',
-    projektant: '',
-    info_location: '',
-  })
-
+  const [form, setForm] = useState<FormData>(INITIAL)
+  const [dbProjektanten, setDbProjektanten] = useState<string[]>(PROJEKTANTEN_DEFAULT)
+  const [dbLocations, setDbLocations] = useState<string[]>(LOCATIONS_DEFAULT)
+  const [dbTypHfc, setDbTypHfc] = useState<string[]>([])
+  const [loading, setLoading] = useState(false)
   const [creating, setCreating] = useState(false)
+  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({})
 
-  const updateField = (field: string, value: string) => {
-    setFormData({ ...formData, [field]: value })
+  useEffect(() => {
+    if (visible) {
+      loadDropdownOptions()
+    }
+  }, [visible])
+
+  const loadDropdownOptions = async () => {
+    try {
+      setLoading(true)
+      const { data } = await supabase
+        .from('hfc_integration')
+        .select('projektant, info_location, typ_hfc')
+
+      if (data && data.length > 0) {
+        const proj = Array.from(new Set([...PROJEKTANTEN_DEFAULT, ...data.map(d => d.projektant).filter(Boolean)])).sort()
+        setDbProjektanten(proj)
+        const locs = Array.from(new Set([...LOCATIONS_DEFAULT, ...data.map(d => d.info_location).filter(Boolean)])).sort()
+        setDbLocations(locs)
+        const typs = Array.from(new Set(data.map(d => d.typ_hfc).filter(Boolean))).sort()
+        setDbTypHfc(typs)
+      }
+    } catch (err) {
+      console.error('Error loading options:', err)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const canSubmit = () => {
-    return formData.bundesland && formData.gebiet && formData.block && formData.nummer &&
-      formData.lv_ev && formData.typ_hfc && formData.plz && formData.ort &&
-      formData.strasse && formData.hausnummer && formData.fsk_adresse
+  const set = (key: keyof FormData, value: string) => {
+    setForm(prev => ({ ...prev, [key]: value }))
+    if (errors[key]) {
+      setErrors(prev => ({ ...prev, [key]: undefined }))
+    }
+  }
+
+  const validateForm = (): boolean => {
+    const e: Partial<Record<keyof FormData, string>> = {}
+    if (!form.bundesland) e.bundesland = 'Pflichtfeld'
+    if (!form.gebiet) e.gebiet = 'Pflichtfeld'
+    if (!form.block) e.block = 'Pflichtfeld'
+    if (!form.nummer) e.nummer = 'Pflichtfeld'
+    if (!form.plz) e.plz = 'Pflichtfeld'
+    if (!form.ort) e.ort = 'Pflichtfeld'
+    if (!form.strasse) e.strasse = 'Pflichtfeld'
+    if (!form.hausnummer) e.hausnummer = 'Pflichtfeld'
+    if (!form.lv_ev) e.lv_ev = 'Pflichtfeld'
+    if (!form.typ_hfc) e.typ_hfc = 'Pflichtfeld'
+    if (!form.fsk_adresse) e.fsk_adresse = 'Pflichtfeld'
+    if (!form.pre_stage_attenuator) e.pre_stage_attenuator = 'Pflichtfeld'
+    if (!form.pre_stage_equaliser) e.pre_stage_equaliser = 'Pflichtfeld'
+    setErrors(e)
+    return Object.keys(e).length === 0
   }
 
   const handleSubmit = async () => {
-    if (!canSubmit()) {
-      Alert.alert('Fehler', 'Bitte alle Pflichtfelder (*) ausfüllen!')
+    if (!validateForm()) {
+      Alert.alert('Fehler', 'Bitte alle Pflichtfelder ausfüllen!')
       return
     }
 
     setCreating(true)
     try {
       const { data: { user } } = await supabase.auth.getUser()
+      const rw_combined = `${form.rw_a1}/${form.rw_a2}/${form.rw_a3}`
+      const today = new Date().toLocaleDateString('de-AT')
 
-      const { error } = await supabase
-        .from('hfc_integration')
-        .insert({
-          bundesland: formData.bundesland,
-          gebiet: formData.gebiet,
-          block: formData.block,
-          nummer: formData.nummer,
-          lv_ev: formData.lv_ev,
-          typ_hfc: formData.typ_hfc,
-          plz: formData.plz,
-          ort: formData.ort,
-          strasse: formData.strasse,
-          hausnummer: formData.hausnummer,
-          fsk_adresse: formData.fsk_adresse,
-          pre_stage_attenuator: formData.pre_stage_attenuator ? parseFloat(formData.pre_stage_attenuator) : null,
-          pre_stage_equaliser: formData.pre_stage_equaliser ? parseFloat(formData.pre_stage_equaliser) : null,
-          rw_a1: formData.rw_a1 ? parseFloat(formData.rw_a1) : null,
-          rw_a2: formData.rw_a2 ? parseFloat(formData.rw_a2) : null,
-          rw_a3: formData.rw_a3 ? parseFloat(formData.rw_a3) : null,
-          referenz: formData.referenz || null,
-          projektant: formData.projektant || null,
-          info_location: formData.info_location || null,
-          techniker: user?.email || null,
-        })
+      const { error } = await supabase.from('hfc_integration').insert({
+        // Netzstruktur
+        bundesland: form.bundesland,
+        gebiet: form.gebiet,
+        block: form.block,
+        nummer: form.nummer,
+        // Standort
+        plz: form.plz,
+        ort: form.ort,
+        strasse: form.strasse,
+        hausnummer: form.hausnummer,
+        // Verstärkertyp
+        lv_ev: form.lv_ev,
+        typ_hfc: form.typ_hfc,
+        typ_gis: form.typ_gis || null,
+        bauteilname: form.bauteilname || null,
+        // Hardware
+        fsk_adresse: form.fsk_adresse,
+        firmware_version: form.firmware_version || null,
+        fsk_261_geaendert: form.fsk_261_geaendert || null,
+        // Technische Parameter
+        pre_stage_attenuator: form.pre_stage_attenuator ? parseFloat(form.pre_stage_attenuator) : null,
+        pre_stage_equaliser: form.pre_stage_equaliser ? parseFloat(form.pre_stage_equaliser) : null,
+        i_daempfer: form.i_daempfer ? form.i_daempfer.replace(',', '.') : null,
+        i_entzerrer: form.i_entzerrer ? form.i_entzerrer.replace(',', '.') : null,
+        a_pegel: form.a_pegel || null,
+        a_rw_pegel: form.a_rw_pegel || null,
+        // RW Module
+        rw_a1: form.rw_a1 ? parseFloat(form.rw_a1) : 0,
+        rw_a2: form.rw_a2 ? parseFloat(form.rw_a2) : 0,
+        rw_a3: form.rw_a3 ? parseFloat(form.rw_a3) : 0,
+        rw_combined: rw_combined,
+        a3_eingang: form.a3_eingang || null,
+        tab_value: form.tab_value || null,
+        // Datum
+        produktionsdatum: form.produktionsdatum || null,
+        aenderungsdatum: form.aenderungsdatum || null,
+        referenz: form.referenz || '0/0/0',
+        // Zusatzfelder
+        projektant: form.projektant || null,
+        info_location: form.info_location || null,
+        kommentar: form.kommentar || null,
+        // Auto
+        techniker: user?.email || null,
+        wartungsdatum: today,
+      })
 
       if (error) throw error
 
-      Alert.alert('Erfolg!', 'HFC Integration Verstärker wurde erstellt!')
-
-      // Reset
-      setFormData({
-        bundesland: '', gebiet: '', block: '', nummer: '', lv_ev: '', typ_hfc: '',
-        plz: '', ort: '', strasse: '', hausnummer: '', fsk_adresse: '',
-        pre_stage_attenuator: '', pre_stage_equaliser: '',
-        rw_a1: '', rw_a2: '', rw_a3: '',
-        referenz: '', projektant: '', info_location: '',
-      })
+      Alert.alert('Erfolg', 'HFC Integration Verstärker erstellt!')
+      setForm(INITIAL)
       onSuccess()
       onClose()
     } catch (err: any) {
-      Alert.alert('Fehler', err.message || 'Verstärker konnte nicht erstellt werden')
+      Alert.alert('Fehler', err.message || 'Konnte nicht speichern')
     } finally {
       setCreating(false)
     }
+  }
+
+  const fieldClass = (key: keyof FormData) =>
+    `${errors[key] ? 'border-red-500 bg-red-50' : 'border-gray-300'}`
+
+  const isComplete = () => form.bundesland && form.gebiet && form.block && form.nummer && form.lv_ev && form.typ_hfc && form.plz && form.ort && form.strasse && form.hausnummer && form.fsk_adresse && form.pre_stage_attenuator && form.pre_stage_equaliser
+
+  if (loading) {
+    return (
+      <Modal visible={visible} animationType="slide">
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.white }}>
+          <ActivityIndicator size="large" color={Colors.gold} />
+          <Text style={{ marginTop: 12, color: Colors.silver700 }}>Lädt Optionen...</Text>
+        </View>
+      </Modal>
+    )
   }
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>🔧 HFC Integration</Text>
-          <Text style={styles.headerSubtitle}>
-            <Text style={styles.required}>*</Text> = Pflichtfeld
-          </Text>
+          <View>
+            <Text style={styles.headerTitle}>🔧 HFC Integration</Text>
+            <Text style={styles.headerSubtitle}>0,2/1,2 Umbau — 32 Felder</Text>
+          </View>
+          <TouchableOpacity onPress={onClose} style={{ padding: 8 }}>
+            <Text style={{ fontSize: 24, color: Colors.black }}>✕</Text>
+          </TouchableOpacity>
         </View>
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-          
-          {/* Netz-ID */}
-          <Text style={styles.sectionTitle}>📍 Netz-ID</Text>
+          {/* NETZSTRUKTUR */}
+          <SectionHeader icon="🏗" title="Netzstruktur" />
+          <Field label="Bundesland *" error={errors.bundesland}>
+            <PickerField value={form.bundesland} onChange={(v) => set('bundesland', v)}>
+              <Picker.Item label="-- Auswählen --" value="" />
+              {BUNDESLAENDER.map(b => <Picker.Item key={b.value} label={b.label} value={b.value} />)}
+            </PickerField>
+          </Field>
+          <Field label="Gebiet *" error={errors.gebiet}>
+            <TextInputField placeholder="z.B. 227" value={form.gebiet} onChangeText={(v) => set('gebiet', v)} />
+          </Field>
+          <Field label="Block *" error={errors.block}>
+            <TextInputField placeholder="z.B. 01" value={form.block} onChangeText={(v) => set('block', v)} />
+          </Field>
+          <Field label="Nummer *" error={errors.nummer}>
+            <TextInputField placeholder="z.B. 01" value={form.nummer} onChangeText={(v) => set('nummer', v)} />
+          </Field>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Bundesland (01-08) <Text style={styles.required}>*</Text></Text>
-            <TextInput style={styles.input} value={formData.bundesland}
-              onChangeText={(v) => updateField('bundesland', v)} placeholder="z.B. 06"
-              placeholderTextColor={Colors.silver600} keyboardType="number-pad" maxLength={2} />
-          </View>
+          {/* STANDORT */}
+          <SectionHeader icon="📍" title="Standort" />
+          <Field label="PLZ *" error={errors.plz}>
+            <TextInputField keyboardType="number-pad" placeholder="z.B. 6300" value={form.plz} onChangeText={(v) => set('plz', v)} />
+          </Field>
+          <Field label="Ort *" error={errors.ort}>
+            <TextInputField placeholder="z.B. Wörgl" value={form.ort} onChangeText={(v) => set('ort', v)} />
+          </Field>
+          <Field label="Straße *" error={errors.strasse}>
+            <TextInputField placeholder="z.B. Hauptstraße" value={form.strasse} onChangeText={(v) => set('strasse', v)} />
+          </Field>
+          <Field label="Hausnummer *" error={errors.hausnummer}>
+            <TextInputField placeholder="z.B. 18" value={form.hausnummer} onChangeText={(v) => set('hausnummer', v)} />
+          </Field>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Gebiet <Text style={styles.required}>*</Text></Text>
-            <TextInput style={styles.input} value={formData.gebiet}
-              onChangeText={(v) => updateField('gebiet', v)} placeholder="z.B. 01"
-              placeholderTextColor={Colors.silver600} />
-          </View>
+          {/* VERSTÄRKERTYP */}
+          <SectionHeader icon="⚡" title="Verstärkertyp" />
+          <Field label="LV/EV *" error={errors.lv_ev}>
+            <PickerField value={form.lv_ev} onChange={(v) => set('lv_ev', v)}>
+              <Picker.Item label="-- Auswählen --" value="" />
+              <Picker.Item label="LV" value="LV" />
+              <Picker.Item label="EV" value="EV" />
+            </PickerField>
+          </Field>
+          <Field label="Typ HFC *" error={errors.typ_hfc}>
+            <TextInputField placeholder="z.B. EV/DBC1200/1,2 GHZ/1" value={form.typ_hfc} onChangeText={(v) => set('typ_hfc', v)} />
+          </Field>
+          <Field label="Typ GIS">
+            <TextInputField placeholder="z.B. Typ GIS" value={form.typ_gis} onChangeText={(v) => set('typ_gis', v)} />
+          </Field>
+          <Field label="Bauteilname">
+            <TextInputField placeholder="z.B. Bauteilname" value={form.bauteilname} onChangeText={(v) => set('bauteilname', v)} />
+          </Field>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Block <Text style={styles.required}>*</Text></Text>
-            <TextInput style={styles.input} value={formData.block}
-              onChangeText={(v) => updateField('block', v)} placeholder="z.B. 02"
-              placeholderTextColor={Colors.silver600} />
-          </View>
+          {/* HARDWARE */}
+          <SectionHeader icon="🔌" title="Hardware" />
+          <Field label="FSK Adresse (MAC) *" error={errors.fsk_adresse}>
+            <TextInputField placeholder="z.B. 00:24:1F:0B:67:F4" value={form.fsk_adresse} onChangeText={(v) => set('fsk_adresse', v)} />
+          </Field>
+          <Field label="Firmware Version">
+            <PickerField value={form.firmware_version} onChange={(v) => set('firmware_version', v)}>
+              <Picker.Item label="-- Auswählen --" value="" />
+              {FIRMWARE_OPTIONS.map(v => <Picker.Item key={v} label={v} value={v} />)}
+            </PickerField>
+          </Field>
+          <Field label="FSK auf 261 MHZ geändert">
+            <PickerField value={form.fsk_261_geaendert} onChange={(v) => set('fsk_261_geaendert', v)}>
+              <Picker.Item label="-- Auswählen --" value="" />
+              {FSK_261_OPTIONS.map(v => <Picker.Item key={v} label={v} value={v} />)}
+            </PickerField>
+          </Field>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Nummer <Text style={styles.required}>*</Text></Text>
-            <TextInput style={styles.input} value={formData.nummer}
-              onChangeText={(v) => updateField('nummer', v)} placeholder="z.B. 001"
-              placeholderTextColor={Colors.silver600} />
-          </View>
+          {/* TECH PARAM - PRE-STAGE */}
+          <SectionHeader icon="📐" title="Technische Parameter — Pre-stage" />
+          <Field label="Pre-stage Attenuator (dB) *" error={errors.pre_stage_attenuator}>
+            <PickerField value={form.pre_stage_attenuator} onChange={(v) => set('pre_stage_attenuator', v)}>
+              <Picker.Item label="-- Auswählen --" value="" />
+              {ATTENUATOR_OPTIONS.map(v => <Picker.Item key={v} label={`${v} dB`} value={v} />)}
+            </PickerField>
+          </Field>
+          <Field label="Pre-stage Equaliser (dB) *" error={errors.pre_stage_equaliser}>
+            <PickerField value={form.pre_stage_equaliser} onChange={(v) => set('pre_stage_equaliser', v)}>
+              <Picker.Item label="-- Auswählen --" value="" />
+              {EQUALISER_OPTIONS.map(v => <Picker.Item key={v} label={`${v} dB`} value={v} />)}
+            </PickerField>
+          </Field>
 
-          {/* Verstärkertyp */}
-          <Text style={styles.sectionTitle}>🔧 Verstärkertyp</Text>
+          {/* TECH PARAM - INTER-STAGE */}
+          <SectionHeader icon="📐" title="Technische Parameter — Inter-stage" />
+          <Field label="Inter-stage Attenuator (dB)">
+            <PickerField value={form.i_daempfer} onChange={(v) => set('i_daempfer', v)}>
+              <Picker.Item label="-- Auswählen --" value="" />
+              {I_DAEMPFER_OPTIONS.map(v => <Picker.Item key={v} label={v} value={v} />)}
+            </PickerField>
+          </Field>
+          <Field label="Inter-stage Equaliser (dB)">
+            <PickerField value={form.i_entzerrer} onChange={(v) => set('i_entzerrer', v)}>
+              <Picker.Item label="-- Auswählen --" value="" />
+              {I_ENTZERRER_OPTIONS.map(v => <Picker.Item key={v} label={v} value={v} />)}
+            </PickerField>
+          </Field>
+          <Field label="A-Pegel">
+            <TextInputField placeholder="z.B. 82/82" value={form.a_pegel} onChangeText={(v) => set('a_pegel', v)} />
+          </Field>
+          <Field label="A-RW Pegel">
+            <TextInputField placeholder="z.B. 0" value={form.a_rw_pegel} onChangeText={(v) => set('a_rw_pegel', v)} />
+          </Field>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>LV/EV <Text style={styles.required}>*</Text></Text>
-            <View style={styles.pickerContainer}>
-              <Picker selectedValue={formData.lv_ev} onValueChange={(v) => updateField('lv_ev', v)} style={styles.picker}>
-                <Picker.Item label="-- Auswählen --" value="" />
-                <Picker.Item label="LV" value="LV" />
-                <Picker.Item label="EV" value="EV" />
-              </Picker>
-            </View>
-          </View>
+          {/* RW MODULE */}
+          <SectionHeader icon="📐" title="RW — Upstream Module" />
+          <Field label="RW A1">
+            <TextInputField keyboardType="decimal-pad" placeholder="0" value={form.rw_a1} onChangeText={(v) => set('rw_a1', v)} />
+          </Field>
+          <Field label="RW A2">
+            <TextInputField keyboardType="decimal-pad" placeholder="0" value={form.rw_a2} onChangeText={(v) => set('rw_a2', v)} />
+          </Field>
+          <Field label="RW A3">
+            <TextInputField keyboardType="decimal-pad" placeholder="0" value={form.rw_a3} onChangeText={(v) => set('rw_a3', v)} />
+          </Field>
+          <Field label="A3/Eingang">
+            <PickerField value={form.a3_eingang} onChange={(v) => set('a3_eingang', v)}>
+              <Picker.Item label="-- Auswählen --" value="" />
+              {A3_EINGANG_OPTIONS.map(v => <Picker.Item key={v} label={v} value={v} />)}
+            </PickerField>
+          </Field>
+          <Field label="TAB">
+            <PickerField value={form.tab_value} onChange={(v) => set('tab_value', v)}>
+              <Picker.Item label="-- Auswählen --" value="" />
+              {TAB_OPTIONS.map(v => <Picker.Item key={v} label={v} value={v} />)}
+            </PickerField>
+          </Field>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Typ HFC <Text style={styles.required}>*</Text></Text>
-            <TextInput style={styles.input} value={formData.typ_hfc}
-              onChangeText={(v) => updateField('typ_hfc', v)} placeholder="z.B. DBC 1200"
-              placeholderTextColor={Colors.silver600} />
-          </View>
+          {/* DATUM */}
+          <SectionHeader icon="📅" title="Datum & Verwaltung" />
+          <Field label="Produktionsdatum">
+            <PickerField value={form.produktionsdatum} onChange={(v) => set('produktionsdatum', v)}>
+              <Picker.Item label="-- Auswählen --" value="" />
+              {PRODUKTIONSDATUM_OPTIONS.map(v => <Picker.Item key={v} label={v} value={v} />)}
+            </PickerField>
+          </Field>
+          <Field label="Änderungsdatum">
+            <TextInputField placeholder="tt.mm.jjjj" value={form.aenderungsdatum} onChangeText={(v) => set('aenderungsdatum', v)} />
+          </Field>
+          <Field label="Referenz">
+            <TextInputField placeholder="z.B. 0/0/0" value={form.referenz} onChangeText={(v) => set('referenz', v)} />
+          </Field>
 
-          {/* Standort */}
-          <Text style={styles.sectionTitle}>📍 Standort</Text>
+          {/* ZUSATZFELDER */}
+          <SectionHeader icon="📋" title="Zusatzfelder" />
+          <Field label="Projektant">
+            <PickerField value={form.projektant} onChange={(v) => set('projektant', v)}>
+              <Picker.Item label="-- Auswählen --" value="" />
+              {dbProjektanten.map(p => <Picker.Item key={p} label={p} value={p} />)}
+            </PickerField>
+          </Field>
+          <Field label="Info / Location">
+            <PickerField value={form.info_location} onChange={(v) => set('info_location', v)}>
+              <Picker.Item label="-- Auswählen --" value="" />
+              {dbLocations.map(l => <Picker.Item key={l} label={l} value={l} />)}
+            </PickerField>
+          </Field>
+          <Field label="Kommentar">
+            <TextInputField placeholder="Zusätzliche Infos..." value={form.kommentar} onChangeText={(v) => set('kommentar', v)} multiline numberOfLines={3} />
+          </Field>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>PLZ <Text style={styles.required}>*</Text></Text>
-            <TextInput style={styles.input} value={formData.plz}
-              onChangeText={(v) => updateField('plz', v)} placeholder="z.B. 6300"
-              placeholderTextColor={Colors.silver600} keyboardType="number-pad" />
-          </View>
-
-          <View style={styles.field}>
-            <Text style={styles.label}>Ort <Text style={styles.required}>*</Text></Text>
-            <TextInput style={styles.input} value={formData.ort}
-              onChangeText={(v) => updateField('ort', v)} placeholder="z.B. Wörgl"
-              placeholderTextColor={Colors.silver600} />
-          </View>
-
-          <View style={styles.field}>
-            <Text style={styles.label}>Straße <Text style={styles.required}>*</Text></Text>
-            <TextInput style={styles.input} value={formData.strasse}
-              onChangeText={(v) => updateField('strasse', v)} placeholder="z.B. Hauptstraße"
-              placeholderTextColor={Colors.silver600} />
-          </View>
-
-          <View style={styles.field}>
-            <Text style={styles.label}>Hausnummer <Text style={styles.required}>*</Text></Text>
-            <TextInput style={styles.input} value={formData.hausnummer}
-              onChangeText={(v) => updateField('hausnummer', v)} placeholder="z.B. 123"
-              placeholderTextColor={Colors.silver600} />
-          </View>
-
-          {/* Hardware */}
-          <Text style={styles.sectionTitle}>⚙️ Hardware</Text>
-
-          <View style={styles.field}>
-            <Text style={styles.label}>FSK Adresse (MAC) <Text style={styles.required}>*</Text></Text>
-            <TextInput style={styles.input} value={formData.fsk_adresse}
-              onChangeText={(v) => updateField('fsk_adresse', v)} placeholder="z.B. 00:11:22:33:44:55"
-              placeholderTextColor={Colors.silver600} />
-          </View>
-
-          {/* Technische Parameter */}
-          <Text style={styles.sectionTitle}>📊 Technische Parameter</Text>
-
-          <View style={styles.field}>
-            <Text style={styles.label}>Pre-stage Attenuator (0-31,5 dB)</Text>
-            <TextInput style={styles.input} value={formData.pre_stage_attenuator}
-              onChangeText={(v) => updateField('pre_stage_attenuator', v)} placeholder="z.B. 15.5"
-              placeholderTextColor={Colors.silver600} keyboardType="decimal-pad" />
-          </View>
-
-          <View style={styles.field}>
-            <Text style={styles.label}>Pre-stage Equaliser (0-18 dB)</Text>
-            <TextInput style={styles.input} value={formData.pre_stage_equaliser}
-              onChangeText={(v) => updateField('pre_stage_equaliser', v)} placeholder="z.B. 9.0"
-              placeholderTextColor={Colors.silver600} keyboardType="decimal-pad" />
-          </View>
-
-          <View style={styles.field}>
-            <Text style={styles.label}>RW A1 (dB)</Text>
-            <TextInput style={styles.input} value={formData.rw_a1}
-              onChangeText={(v) => updateField('rw_a1', v)} placeholder="z.B. 10.0"
-              placeholderTextColor={Colors.silver600} keyboardType="decimal-pad" />
-          </View>
-
-          <View style={styles.field}>
-            <Text style={styles.label}>RW A2 (dB)</Text>
-            <TextInput style={styles.input} value={formData.rw_a2}
-              onChangeText={(v) => updateField('rw_a2', v)} placeholder="z.B. 12.0"
-              placeholderTextColor={Colors.silver600} keyboardType="decimal-pad" />
-          </View>
-
-          <View style={styles.field}>
-            <Text style={styles.label}>RW A3 (dB)</Text>
-            <TextInput style={styles.input} value={formData.rw_a3}
-              onChangeText={(v) => updateField('rw_a3', v)} placeholder="z.B. 8.0"
-              placeholderTextColor={Colors.silver600} keyboardType="decimal-pad" />
-          </View>
-
-          {/* Zusätzliche Infos */}
-          <Text style={styles.sectionTitle}>📝 Zusatz</Text>
-
-          <View style={styles.field}>
-            <Text style={styles.label}>Referenz</Text>
-            <TextInput style={styles.input} value={formData.referenz}
-              onChangeText={(v) => updateField('referenz', v)} placeholder="Referenz-Nummer"
-              placeholderTextColor={Colors.silver600} />
-          </View>
-
-          <View style={styles.field}>
-            <Text style={styles.label}>Projektant</Text>
-            <TextInput style={styles.input} value={formData.projektant}
-              onChangeText={(v) => updateField('projektant', v)} placeholder="Name des Projektanten"
-              placeholderTextColor={Colors.silver600} />
-          </View>
-
-          <View style={styles.field}>
-            <Text style={styles.label}>Info/Location</Text>
-            <TextInput style={[styles.input, styles.textArea]} value={formData.info_location}
-              onChangeText={(v) => updateField('info_location', v)} placeholder="Zusätzliche Informationen..."
-              placeholderTextColor={Colors.silver600} multiline numberOfLines={4} />
-          </View>
-
-          {!canSubmit() && (
-            <View style={styles.warning}>
-              <Text style={styles.warningText}>
-                ⚠️ Pflichtfelder: Bundesland, Gebiet, Block, Nummer, LV/EV, Typ HFC, PLZ, Ort, Straße, Hnr, FSK
-              </Text>
-            </View>
-          )}
+          <View style={{ height: 20 }} />
         </ScrollView>
 
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.cancelButton} onPress={onClose} disabled={creating}>
-            <Text style={styles.cancelButtonText}>Abbrechen</Text>
+        <View style={styles.footer}>
+          <TouchableOpacity style={styles.cancelBtn} onPress={onClose} disabled={creating}>
+            <Text style={styles.cancelBtnText}>Abbrechen</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.submitButton, (!canSubmit() || creating) && styles.submitButtonDisabled]}
-            onPress={handleSubmit} disabled={!canSubmit() || creating}>
-            <Text style={styles.submitButtonText}>
+            style={[styles.submitBtn, !isComplete() && styles.submitBtnDisabled]}
+            onPress={handleSubmit} disabled={!isComplete() || creating}>
+            <Text style={styles.submitBtnText}>
               {creating ? '⏳ Erstelle...' : '✅ Erstellen'}
             </Text>
           </TouchableOpacity>
@@ -297,27 +448,76 @@ export default function CreateHFCIntegrationModal({ visible, onClose, onSuccess 
   )
 }
 
+// Subcomponents
+function SectionHeader({ icon, title }: { icon: string; title: string }) {
+  return (
+    <View style={{ marginTop: 20, marginBottom: 12 }}>
+      <Text style={{ fontSize: 18, fontWeight: 'bold', color: Colors.black }}>
+        {icon} {title}
+      </Text>
+    </View>
+  )
+}
+
+function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
+  return (
+    <View style={{ marginBottom: 16 }}>
+      <Text style={{ fontSize: 14, fontWeight: '700', color: Colors.black, marginBottom: 8 }}>
+        {label}
+      </Text>
+      {children}
+      {error && <Text style={{ fontSize: 12, color: '#ef4444', marginTop: 4 }}>⚠️ {error}</Text>}
+    </View>
+  )
+}
+
+function TextInputField({ ...props }: any) {
+  return (
+    <TextInput
+      style={{
+        backgroundColor: Colors.white,
+        borderWidth: 2,
+        borderColor: Colors.silver300,
+        borderRadius: 10,
+        padding: 12,
+        fontSize: 16,
+        color: Colors.black,
+        ...Shadows.light,
+      }}
+      placeholderTextColor={Colors.silver600}
+      {...props}
+    />
+  )
+}
+
+function PickerField({ value, onChange, children }: { value: string; onChange: (v: string) => void; children: React.ReactNode }) {
+  return (
+    <View style={{
+      backgroundColor: Colors.white,
+      borderWidth: 2,
+      borderColor: Colors.silver300,
+      borderRadius: 10,
+      overflow: 'hidden',
+      ...Shadows.light,
+    }}>
+      <Picker selectedValue={value} onValueChange={onChange} style={{ height: 50 }}>
+        {children}
+      </Picker>
+    </View>
+  )
+}
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.white },
-  header: { padding: 20, paddingTop: 60, backgroundColor: Colors.white, borderBottomWidth: 2, borderBottomColor: Colors.black, ...Shadows.medium },
-  headerTitle: { fontSize: 28, fontWeight: 'bold', color: Colors.black, marginBottom: 4 },
-  headerSubtitle: { fontSize: 14, color: Colors.silver700, fontWeight: '600' },
-  required: { color: Colors.error || '#ef4444', fontWeight: 'bold' },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', padding: 20, paddingTop: 60, backgroundColor: Colors.white, borderBottomWidth: 2, borderBottomColor: Colors.black, ...Shadows.medium },
+  headerTitle: { fontSize: 28, fontWeight: 'bold', color: Colors.black },
+  headerSubtitle: { fontSize: 14, color: Colors.silver700, fontWeight: '600', marginTop: 4 },
   scrollView: { flex: 1 },
   scrollContent: { padding: 20 },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: Colors.black, marginTop: 16, marginBottom: 12 },
-  field: { marginBottom: 16 },
-  label: { fontSize: 14, fontWeight: '700', color: Colors.black, marginBottom: 8 },
-  input: { backgroundColor: Colors.white, borderWidth: 2, borderColor: Colors.silver300, borderRadius: 10, padding: 14, fontSize: 16, color: Colors.black, ...Shadows.light },
-  textArea: { minHeight: 100, textAlignVertical: 'top' },
-  pickerContainer: { backgroundColor: Colors.white, borderWidth: 2, borderColor: Colors.silver300, borderRadius: 10, overflow: 'hidden', ...Shadows.light },
-  picker: { height: 50 },
-  warning: { backgroundColor: '#fef3c7', borderWidth: 2, borderColor: '#f59e0b', borderRadius: 10, padding: 16, marginTop: 10 },
-  warningText: { fontSize: 13, color: '#92400e', fontWeight: '600' },
-  buttonContainer: { flexDirection: 'row', padding: 20, gap: 12, borderTopWidth: 2, borderTopColor: Colors.silver300, backgroundColor: Colors.white },
-  cancelButton: { flex: 1, backgroundColor: Colors.white, borderWidth: 2, borderColor: Colors.black, borderRadius: 10, padding: 16, alignItems: 'center', ...Shadows.light },
-  cancelButtonText: { fontSize: 16, fontWeight: 'bold', color: Colors.black },
-  submitButton: { flex: 2, backgroundColor: Colors.gold, borderWidth: 2, borderColor: Colors.goldDark, borderRadius: 10, padding: 16, alignItems: 'center', ...Shadows.gold },
-  submitButtonDisabled: { opacity: 0.5 },
-  submitButtonText: { fontSize: 16, fontWeight: 'bold', color: Colors.black },
+  footer: { flexDirection: 'row', gap: 12, padding: 16, borderTopWidth: 2, borderTopColor: Colors.silver300, backgroundColor: Colors.white },
+  cancelBtn: { flex: 1, backgroundColor: Colors.white, borderWidth: 2, borderColor: Colors.black, borderRadius: 10, padding: 14, alignItems: 'center', ...Shadows.light },
+  cancelBtnText: { fontSize: 16, fontWeight: 'bold', color: Colors.black },
+  submitBtn: { flex: 2, backgroundColor: Colors.gold, borderWidth: 2, borderColor: Colors.goldDark, borderRadius: 10, padding: 14, alignItems: 'center', ...Shadows.gold },
+  submitBtnDisabled: { opacity: 0.5 },
+  submitBtnText: { fontSize: 16, fontWeight: 'bold', color: Colors.black },
 })
