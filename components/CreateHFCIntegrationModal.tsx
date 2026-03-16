@@ -187,9 +187,9 @@ export default function CreateHFCIntegrationModal({ visible, onClose, onSuccess 
   }
 
   const handleSubmit = async () => {
+    // Photos optional für jetzt — Warnung statt Blocker
     if (!photos.nahaufnahme || !photos.kastenfoto || !photos.standortansicht) {
-      Alert.alert('Fotos fehlen', 'Bitte alle 3 Fotos hinzufügen (Nahaufnahme, Kastenfoto, Standortansicht)')
-      return
+      console.warn('Fotos nicht vollständig — wird trotzdem gespeichert')
     }
 
     if (!validateForm()) {
@@ -249,7 +249,10 @@ export default function CreateHFCIntegrationModal({ visible, onClose, onSuccess 
         wartungsdatum: today,
       })
 
-      if (error) throw error
+      if (error) {
+        console.error('SUPABASE INSERT ERROR:', JSON.stringify(error))
+        throw new Error(`DB Error: ${error.message} (Code: ${error.code}, Details: ${error.details})`)
+      }
 
       Alert.alert('Erfolg', 'HFC Integration Verstärker erstellt!')
       setForm(INITIAL)
@@ -265,7 +268,7 @@ export default function CreateHFCIntegrationModal({ visible, onClose, onSuccess 
   const fieldClass = (key: keyof FormData) =>
     `${errors[key] ? 'border-red-500 bg-red-50' : 'border-gray-300'}`
 
-  const isComplete = () => form.bundesland && form.gebiet && form.block && form.nummer && form.lv_ev && form.typ_hfc && form.plz && form.ort && form.strasse && form.hausnummer && form.fsk_adresse && form.pre_stage_attenuator && form.pre_stage_equaliser
+  const isComplete = () => form.bundesland && form.gebiet && form.block && form.nummer && form.lv_ev && form.typ_hfc && form.plz && form.ort && form.strasse && form.hausnummer && form.fsk_adresse
 
   if (loading) {
     return (
