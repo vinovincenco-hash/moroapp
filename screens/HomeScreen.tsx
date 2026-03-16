@@ -15,12 +15,17 @@ interface HomeScreenProps {
 
 export default function HomeScreen({ onLogout }: HomeScreenProps) {
   const [currentDB, setCurrentDB] = useState<DatabaseType>('hfc_862')
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<any>({
     total: 0,
     worgl: 0,
     schwaz: 0,
     stJohann: 0,
     lienz: 0,
+    lv: 0,
+    ev: 0,
+    onb: 0,
+    onh: 0,
+    olt: 0,
   })
   const [loading, setLoading] = useState(true)
   const [formSelectorVisible, setFormSelectorVisible] = useState(false)
@@ -82,14 +87,71 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
           stJohann: stJohann || 0,
           lienz: lienz || 0,
         })
+      } else if (currentDB === 'hfc_integration') {
+        // HFC Integration: LV vs EV
+        const { count: lv } = await supabase
+          .from('hfc_integration')
+          .select('*', { count: 'exact', head: true })
+          .eq('lv_ev', 'LV')
+
+        const { count: ev } = await supabase
+          .from('hfc_integration')
+          .select('*', { count: 'exact', head: true })
+          .eq('lv_ev', 'EV')
+
+        setStats({
+          total: total || 0,
+          lv: lv || 0,
+          ev: ev || 0,
+          worgl: 0,
+          schwaz: 0,
+          stJohann: 0,
+          lienz: 0,
+          onb: 0,
+          onh: 0,
+          olt: 0,
+        })
+      } else if (currentDB === 'fttx') {
+        // FTTX: ONB, ONH, OLT
+        const { count: onb } = await supabase
+          .from('fttx')
+          .select('*', { count: 'exact', head: true })
+          .ilike('name', '%ONB%')
+
+        const { count: onh } = await supabase
+          .from('fttx')
+          .select('*', { count: 'exact', head: true })
+          .ilike('name', '%ONH%')
+
+        const { count: olt } = await supabase
+          .from('fttx')
+          .select('*', { count: 'exact', head: true })
+          .ilike('name', '%OLT%')
+
+        setStats({
+          total: total || 0,
+          onb: onb || 0,
+          onh: onh || 0,
+          olt: olt || 0,
+          worgl: 0,
+          schwaz: 0,
+          stJohann: 0,
+          lienz: 0,
+          lv: 0,
+          ev: 0,
+        })
       } else {
-        // For HFC Integration & FTTX: stats by Bundesland (or simple total)
         setStats({
           total: total || 0,
           worgl: 0,
           schwaz: 0,
           stJohann: 0,
           lienz: 0,
+          lv: 0,
+          ev: 0,
+          onb: 0,
+          onh: 0,
+          olt: 0,
         })
       }
     } catch (error) {
@@ -186,7 +248,7 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
                 <Text style={styles.statValue}>{stats.total.toLocaleString()}</Text>
               </View>
               
-              {/* Show HUB breakdown only for HFC 862 */}
+              {/* HFC 862: Show HUB breakdown */}
               {currentDB === 'hfc_862' && (
                 <>
                   <View style={styles.statRow}>
@@ -204,6 +266,42 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
                   <View style={styles.statRow}>
                     <Text style={styles.statLabel}>• Lienz:</Text>
                     <Text style={styles.statValue}>{stats.lienz.toLocaleString()}</Text>
+                  </View>
+                </>
+              )}
+
+              {/* HFC Integration: Show LV/EV breakdown */}
+              {currentDB === 'hfc_integration' && (
+                <>
+                  <View style={styles.statRow}>
+                    <Text style={styles.statLabel}>• LV (Leitungsverstärker):</Text>
+                    <Text style={styles.statValue}>{stats.lv.toLocaleString()}</Text>
+                  </View>
+                  <View style={styles.statRow}>
+                    <Text style={styles.statLabel}>• EV (Endverstärker):</Text>
+                    <Text style={styles.statValue}>{stats.ev.toLocaleString()}</Text>
+                  </View>
+                  <View style={styles.statRow}>
+                    <Text style={styles.statLabel}>• LV Quote:</Text>
+                    <Text style={styles.statValue}>{stats.total > 0 ? ((stats.lv / stats.total) * 100).toFixed(0) : 0}%</Text>
+                  </View>
+                </>
+              )}
+
+              {/* FTTX: Show ONB/ONH/OLT breakdown */}
+              {currentDB === 'fttx' && (
+                <>
+                  <View style={styles.statRow}>
+                    <Text style={styles.statLabel}>• ONB (Optical Network Bridge):</Text>
+                    <Text style={styles.statValue}>{stats.onb.toLocaleString()}</Text>
+                  </View>
+                  <View style={styles.statRow}>
+                    <Text style={styles.statLabel}>• ONH (Optical Network Hub):</Text>
+                    <Text style={styles.statValue}>{stats.onh.toLocaleString()}</Text>
+                  </View>
+                  <View style={styles.statRow}>
+                    <Text style={styles.statLabel}>• OLT (Optical Line Terminal):</Text>
+                    <Text style={styles.statValue}>{stats.olt.toLocaleString()}</Text>
                   </View>
                 </>
               )}
