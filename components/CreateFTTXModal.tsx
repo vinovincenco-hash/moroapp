@@ -5,6 +5,7 @@ import {
 } from 'react-native'
 import { Colors, Shadows } from '../constants/Colors'
 import { supabase } from '../lib/supabase'
+import PhotoUpload, { PhotoSet, EMPTY_PHOTOS } from './PhotoUpload'
 
 interface CreateFTTXModalProps {
   visible: boolean
@@ -29,6 +30,7 @@ const INITIAL: FormData = {
 
 export default function CreateFTTXModal({ visible, onClose, onSuccess }: CreateFTTXModalProps) {
   const [form, setForm] = useState<FormData>(INITIAL)
+  const [photos, setPhotos] = useState<PhotoSet>(EMPTY_PHOTOS)
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({})
   const [saving, setSaving] = useState(false)
 
@@ -48,6 +50,11 @@ export default function CreateFTTXModal({ visible, onClose, onSuccess }: CreateF
   }
 
   const handleSubmit = async () => {
+    if (!photos.nahaufnahme || !photos.kastenfoto || !photos.standortansicht) {
+      Alert.alert('Fotos fehlen', 'Bitte alle 3 Fotos hinzufügen (Nahaufnahme, Kastenfoto, Standortansicht)')
+      return
+    }
+
     if (!validateForm()) {
       Alert.alert('Fehler', 'Bitte alle Pflichtfelder ausfüllen!')
       return
@@ -159,6 +166,9 @@ export default function CreateFTTXModal({ visible, onClose, onSuccess }: CreateF
               numberOfLines={4}
             />
           </Field>
+
+          {/* PHOTOS */}
+          <PhotoUpload photos={photos} onChange={setPhotos} required={true} />
 
           <View style={{ height: 20 }} />
         </ScrollView>

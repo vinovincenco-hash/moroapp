@@ -8,6 +8,7 @@ import { Colors, Shadows } from '../constants/Colors'
 import { supabase, DatabaseType } from '../lib/supabase'
 import CreateHFCIntegrationModal from './CreateHFCIntegrationModal'
 import CreateFTTXModal from './CreateFTTXModal'
+import PhotoUpload, { PhotoSet, EMPTY_PHOTOS } from './PhotoUpload'
 
 interface CreateAmplifierModalProps {
   visible: boolean
@@ -60,6 +61,7 @@ export default function CreateAmplifierModal({ visible, onClose, onSuccess, dbTy
 
   const [options, setOptions] = useState<CascadingOptions>(EMPTY_OPTIONS)
   const [creating, setCreating] = useState(false)
+  const [photos, setPhotos] = useState<PhotoSet>(EMPTY_PHOTOS)
   const [loading, setLoading] = useState(false)
   const [customFields, setCustomFields] = useState<Record<string, boolean>>({})
 
@@ -159,6 +161,11 @@ export default function CreateAmplifierModal({ visible, onClose, onSuccess, dbTy
   }
 
   const handleSubmit = async () => {
+    if (!photos.nahaufnahme || !photos.kastenfoto || !photos.standortansicht) {
+      Alert.alert('Fotos fehlen', 'Bitte alle 3 Fotos hinzufügen (Nahaufnahme, Kastenfoto, Standortansicht)')
+      return
+    }
+
     if (!canSubmit()) {
       Alert.alert('Fehler', 'Bitte alle Pflichtfelder (*) ausfüllen!')
       return
@@ -350,6 +357,9 @@ export default function CreateAmplifierModal({ visible, onClose, onSuccess, dbTy
               onChangeText={(v) => updateField('bemerkungen', v)} placeholder="Zusätzliche Informationen..."
               placeholderTextColor={Colors.silver600} multiline numberOfLines={4} />
           </View>
+
+          {/* PHOTOS */}
+          <PhotoUpload photos={photos} onChange={setPhotos} required={true} />
 
           {!canSubmit() && (
             <View style={styles.warning}>

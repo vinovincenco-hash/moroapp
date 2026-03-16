@@ -6,6 +6,7 @@ import {
 import { Picker } from '@react-native-picker/picker'
 import { Colors, Shadows } from '../constants/Colors'
 import { supabase } from '../lib/supabase'
+import PhotoUpload, { PhotoSet, EMPTY_PHOTOS } from './PhotoUpload'
 
 interface CreateHFCIntegrationModalProps {
   visible: boolean
@@ -102,6 +103,7 @@ const INITIAL: FormData = {
 
 export default function CreateHFCIntegrationModal({ visible, onClose, onSuccess }: CreateHFCIntegrationModalProps) {
   const [form, setForm] = useState<FormData>(INITIAL)
+  const [photos, setPhotos] = useState<PhotoSet>(EMPTY_PHOTOS)
   const [dbProjektanten, setDbProjektanten] = useState<string[]>(PROJEKTANTEN_DEFAULT)
   const [dbLocations, setDbLocations] = useState<string[]>(LOCATIONS_DEFAULT)
   const [dbTypHfc, setDbTypHfc] = useState<string[]>([])
@@ -164,6 +166,11 @@ export default function CreateHFCIntegrationModal({ visible, onClose, onSuccess 
   }
 
   const handleSubmit = async () => {
+    if (!photos.nahaufnahme || !photos.kastenfoto || !photos.standortansicht) {
+      Alert.alert('Fotos fehlen', 'Bitte alle 3 Fotos hinzufügen (Nahaufnahme, Kastenfoto, Standortansicht)')
+      return
+    }
+
     if (!validateForm()) {
       Alert.alert('Fehler', 'Bitte alle Pflichtfelder ausfüllen!')
       return
@@ -427,6 +434,9 @@ export default function CreateHFCIntegrationModal({ visible, onClose, onSuccess 
           <Field label="Kommentar">
             <TextInputField placeholder="Zusätzliche Infos..." value={form.kommentar} onChangeText={(v) => set('kommentar', v)} multiline numberOfLines={3} />
           </Field>
+
+          {/* PHOTOS */}
+          <PhotoUpload photos={photos} onChange={setPhotos} required={true} />
 
           <View style={{ height: 20 }} />
         </ScrollView>
