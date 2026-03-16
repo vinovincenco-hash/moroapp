@@ -434,16 +434,16 @@ function CascadingField({ label, required, value, options, isCustom, onChange, o
   return (
     <View style={styles.field}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-        <Text style={[styles.label, hasValue && { color: '#1d4ed8' }, { marginBottom: 0 }]}>
+        <Text style={[styles.label, hasValue && { color: Colors.gold }, { marginBottom: 0 }]}>
           {label} {required && <Text style={styles.required}>*</Text>}
           {hasValue && ' ●'}
         </Text>
         {isNewValue && (
-          <View style={{ backgroundColor: '#dcfce7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
-            <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#15803d' }}>NEU</Text>
+          <View style={{ backgroundColor: Colors.successLight, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
+            <Text style={{ fontSize: 10, fontWeight: 'bold', color: Colors.success }}>NEU</Text>
           </View>
         )}
-        <Text style={{ fontSize: 11, color: '#9ca3af' }}>({options.length})</Text>
+        <Text style={{ fontSize: 11, color: Colors.textMuted }}>({options.length})</Text>
       </View>
 
       {isNewValue ? (
@@ -486,7 +486,7 @@ const styles = StyleSheet.create({
   pickerContainer: { backgroundColor: Colors.bg, borderWidth: 2, borderColor: Colors.border, borderRadius: 10, overflow: 'hidden', ...Shadows.light },
   picker: { height: 50 },
   warning: { backgroundColor: Colors.warningLight, borderWidth: 2, borderColor: Colors.warning, borderRadius: 10, padding: 16, marginTop: 10 },
-  warningText: { fontSize: 14, color: '#92400e', fontWeight: '600' },
+  warningText: { fontSize: 14, color: Colors.warning, fontWeight: '600' },
   buttonContainer: { flexDirection: 'row', padding: 20, gap: 12, borderTopWidth: 2, borderTopColor: Colors.silver300, backgroundColor: Colors.bg },
   cancelButton: { flex: 1, backgroundColor: Colors.bg, borderWidth: 2, borderColor: Colors.gold, borderRadius: 10, padding: 16, alignItems: 'center', ...Shadows.light },
   cancelButtonText: { fontSize: 16, fontWeight: 'bold', color: Colors.white },

@@ -20,15 +20,12 @@ export default function OrderNumber({ onGenerated }: Props) {
     setLoading(true)
     try {
       const { data, error } = await supabase.rpc('get_next_order_number')
-
       if (error) throw error
-
       const num = data as string
       setOrderNumber(num)
       onGenerated(num)
     } catch (err: any) {
       console.error('Order number error:', err)
-      // Fallback
       const fallback = `AmpX-${String(Date.now()).slice(-7)}-${new Date().toISOString().split('T')[0].replace(/-/g, '')}`
       setOrderNumber(fallback)
       onGenerated(fallback)
@@ -87,26 +84,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-    backgroundColor: Colors.bgInput,
+    backgroundColor: Colors.bgCard,
     borderWidth: 2,
-    borderColor: '#93c5fd',
+    borderColor: Colors.borderGold,
     borderRadius: 12,
     marginBottom: 16,
     gap: 12,
-    ...Shadows.light,
+    ...Shadows.gold,
   },
   info: { flex: 1 },
-  label: { fontSize: 12, fontWeight: '600', color: '#2563eb', marginBottom: 4 },
-  number: { fontSize: 18, fontWeight: 'bold', fontFamily: Platform.OS === 'web' ? 'monospace' : undefined, color: '#111827' },
-  loadingText: { fontSize: 13, color: '#6b7280', marginLeft: 8 },
+  label: { fontSize: 12, fontWeight: '700', color: Colors.gold, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 },
+  number: { fontSize: 18, fontWeight: 'bold', fontFamily: Platform.OS === 'web' ? 'monospace' : undefined, color: Colors.white },
+  loadingText: { fontSize: 13, color: Colors.textMuted, marginLeft: 8 },
   copyBtn: {
     paddingHorizontal: 16,
     paddingVertical: 10,
-    backgroundColor: '#2563eb',
+    backgroundColor: Colors.gold,
     borderRadius: 8,
+    ...Shadows.light,
   },
   copyBtnDone: {
-    backgroundColor: '#16a34a',
+    backgroundColor: Colors.success,
   },
-  copyBtnText: { fontSize: 13, fontWeight: '700', color: 'white' },
+  copyBtnText: { fontSize: 13, fontWeight: '700', color: Colors.black },
 })

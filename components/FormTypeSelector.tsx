@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native'
-import { Colors } from '../constants/Colors'
+import { Colors, Shadows } from '../constants/Colors'
 
 export type DatabaseType = 'hfc_862' | 'hfc_integration' | 'fttx'
 
@@ -22,8 +22,7 @@ interface FormOption {
   title: string
   desc: string
   icon: string
-  color: string
-  accentColor: string
+  borderColor: string
 }
 
 const OPTIONS: FormOption[] = [
@@ -32,24 +31,21 @@ const OPTIONS: FormOption[] = [
     title: 'HFC – 862MHZ',
     desc: 'Bestehende Datenbank (Verstärker)',
     icon: '📡',
-    color: '#DBEAFE',
-    accentColor: '#3B82F6',
+    borderColor: Colors.gold,
   },
   {
     type: 'hfc_integration',
     title: 'HFC – Integrationsdatenbank',
     desc: '0,2/1,2 Umbau',
     icon: '🔧',
-    color: '#FEF3C7',
-    accentColor: '#D97706',
+    borderColor: Colors.warning,
   },
   {
     type: 'fttx',
     title: 'FTTX – ONB/ONH/OLT',
     desc: 'Glasfaser-Netzwerk',
     icon: '🌐',
-    color: '#DCFCE7',
-    accentColor: '#16A34A',
+    borderColor: Colors.success,
   },
 ]
 
@@ -63,28 +59,19 @@ export default function FormTypeSelector({ visible, onSelect, onClose }: FormTyp
     >
       <View style={styles.backdrop}>
         <View style={styles.container}>
-          {/* Header */}
           <View style={styles.header}>
             <Text style={styles.headerTitle}>Formular auswählen</Text>
-            <TouchableOpacity
-              onPress={onClose}
-              activeOpacity={0.7}
-              style={styles.closeButton}
-            >
+            <TouchableOpacity onPress={onClose} activeOpacity={0.7} style={styles.closeButton}>
               <Text style={styles.closeButtonText}>✕</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Options */}
           <ScrollView style={styles.optionsContainer} scrollEnabled={false}>
             {OPTIONS.map((opt) => (
               <TouchableOpacity
                 key={opt.type}
-                style={[styles.optionButton, { backgroundColor: opt.color }]}
-                onPress={() => {
-                  onSelect(opt.type)
-                  onClose()
-                }}
+                style={[styles.optionButton, { borderColor: opt.borderColor }]}
+                onPress={() => { onSelect(opt.type); onClose() }}
                 activeOpacity={0.7}
               >
                 <Text style={styles.optionIcon}>{opt.icon}</Text>
@@ -92,6 +79,7 @@ export default function FormTypeSelector({ visible, onSelect, onClose }: FormTyp
                   <Text style={styles.optionTitle}>{opt.title}</Text>
                   <Text style={styles.optionDesc}>{opt.desc}</Text>
                 </View>
+                <Text style={{ fontSize: 18, color: Colors.textMuted }}>→</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -104,20 +92,18 @@ export default function FormTypeSelector({ visible, onSelect, onClose }: FormTyp
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   container: {
     width: '85%',
     maxWidth: 400,
-    backgroundColor: Colors.bg,
+    backgroundColor: Colors.bgCard,
     borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
+    borderWidth: 1,
+    borderColor: Colors.borderGold,
+    ...Shadows.gold,
   },
   header: {
     flexDirection: 'row',
@@ -127,19 +113,19 @@ const styles = StyleSheet.create({
     paddingTop: 24,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: Colors.border,
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: '700',
-    color: '#111827',
+    fontWeight: '800',
+    color: Colors.white,
   },
   closeButton: {
     padding: 4,
   },
   closeButtonText: {
     fontSize: 28,
-    color: '#9CA3AF',
+    color: Colors.textMuted,
     lineHeight: 28,
   },
   optionsContainer: {
@@ -154,7 +140,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#D1D5DB',
+    backgroundColor: Colors.bg,
   },
   optionIcon: {
     fontSize: 32,
@@ -166,11 +152,11 @@ const styles = StyleSheet.create({
   optionTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#111827',
+    color: Colors.white,
     marginBottom: 4,
   },
   optionDesc: {
     fontSize: 13,
-    color: '#6B7280',
+    color: Colors.textSecondary,
   },
 })

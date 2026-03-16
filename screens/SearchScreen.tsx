@@ -373,7 +373,7 @@ export default function SearchScreen({ onClose, currentDB = 'hfc_862' }: SearchS
           <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }}>
             {detailFields.map((field) => (
               <View key={field.key} style={{ marginBottom: 16 }}>
-                <Text style={{ fontSize: 11, fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', marginBottom: 4 }}>{field.label}</Text>
+                <Text style={{ fontSize: 11, fontWeight: '700', color: Colors.textMuted, textTransform: 'uppercase', marginBottom: 4 }}>{field.label}</Text>
                 {editMode ? (
                   <TextInput
                     style={[styles.input, { fontSize: 15 }]}
@@ -516,7 +516,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   pickerLabelActive: {
-    color: '#1d4ed8',
+    color: Colors.gold,
   },
   pickerContainer: {
     backgroundColor: Colors.bg,
