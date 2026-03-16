@@ -46,6 +46,25 @@ const TAB_OPTIONS = ['0', '4/4', '2/12', '5/8', '1/8', '1/6']
 const FIRMWARE_OPTIONS = ['2.00', '2.22', '1.06', '2.40', '2.60']
 const FSK_261_OPTIONS = ['Ja', 'Nein']
 
+// Typ HFC — Endverstärker Wien u. Region + Linienverstärker + weitere
+const TYP_HFC_OPTIONS = [
+  'EV/DBC1200/1,2 GHZ/1', 'EV/DBC1200/1,2 GHZ/1-Flat', 'EV/DBC1200/1,2 GHZ/2', 'EV/DBC1200/1,2 GHZ/2-Flat',
+  'EV/DBC1200/1,0 GHZ/1', 'EV/DBC1200/1,0 GHZ/2', 'EV/R', 'EV/S', 'EV/T',
+  'EV/FM222/1', 'EV/FM222/2', 'EV/FM222/1/Ortsspeisung', 'EV/FM222/2/Ortsspeisung',
+  'EV/FM222/1/Ingress', 'EV/FM222/2/Ingress',
+  'EV/DA1000/1', 'EV/DA1000/2', 'EV/DA1000/1/Ortsspeisung', 'EV/DA1000/2/Ortsspeisung',
+  'EV/DA1000/1/Ingress', 'EV/DA1000/2/Ingress',
+  'LV/DBC1200/1,2 GHZ/0', 'LV/DBC1200/1,2 GHZ/1', 'LV/DBC1200/1,2 GHZ/2', 'LV/DBC1200/1,2 GHZ/3',
+  'LV/DBC1200/1,2 GHZ/4', 'LV/DBC1200/1,2 GHZ', 'LV/DBC1200/1,2 GHZ/0-38dB', 'LV/DBC1200/1,2 GHZ/1-38dB',
+  'LV/DBC1200/1,2 GHZ/2-38dB', 'LV/DBC1200/1,2 GHZ/3-38dB', 'LV/DBC1200/1,2 GHZ/4-38dB', 'LV/DBC1200/1,2 GHZ/-38dB',
+  'LV/DBC1200/1,0 GHZ/0', 'LV/DBC1200/1,0 GHZ/1', 'LV/DBC1200/1,0 GHZ/2', 'LV/DBC1200/1,0 GHZ/3', 'LV/DBC1200/1,0 GHZ/4',
+  'LV/FM3111/0', 'LV/FM3111/1', 'LV/FM3111/2', 'LV/FM3111/3', 'LV/FM3111/4',
+  'LV/DA1000/0', 'LV/DA1000/1', 'LV/DA1000/2', 'LV/DA1000/3', 'LV/DA1000/4',
+  'LV/A', 'LV/B', 'LV/C', 'LV/E', 'LV/G', 'RV', 'ONB 1261 B1F-15-65 F',
+  'LV/MAX030G', 'LV/MAX037', 'LV/MAX037G', 'LV/MAX236', 'LV/MAX236G',
+  'EV/FM400', 'LV/FM400', 'LV/EV/DBD1200/1,2 GHZ',
+]
+
 interface FormData {
   // Netzstruktur
   bundesland: string
@@ -322,7 +341,14 @@ export default function CreateHFCIntegrationModal({ visible, onClose, onSuccess 
             </PickerField>
           </Field>
           <Field label="Typ HFC *" error={errors.typ_hfc}>
-            <TextInputField placeholder="z.B. EV/DBC1200/1,2 GHZ/1" value={form.typ_hfc} onChangeText={(v) => set('typ_hfc', v)} />
+            <View style={styles.pickerContainer}>
+              <Picker selectedValue={form.typ_hfc} onValueChange={(v) => set('typ_hfc', v)} style={styles.picker}>
+                <Picker.Item label="-- Typ HFC auswählen --" value="" />
+                {TYP_HFC_OPTIONS.map((t) => (
+                  <Picker.Item key={t} label={t} value={t} />
+                ))}
+              </Picker>
+            </View>
           </Field>
           <Field label="Typ GIS">
             <TextInputField placeholder="z.B. Typ GIS" value={form.typ_gis} onChangeText={(v) => set('typ_gis', v)} />
@@ -537,4 +563,6 @@ const styles = StyleSheet.create({
   submitBtn: { flex: 2, backgroundColor: Colors.gold, borderWidth: 2, borderColor: Colors.goldDark, borderRadius: 10, padding: 14, alignItems: 'center', ...Shadows.gold },
   submitBtnDisabled: { opacity: 0.5 },
   submitBtnText: { fontSize: 16, fontWeight: 'bold', color: Colors.white },
+  pickerContainer: { backgroundColor: Colors.bg, borderWidth: 2, borderColor: Colors.border, borderRadius: 10, overflow: 'hidden', ...Shadows.light },
+  picker: { height: 50 },
 })
