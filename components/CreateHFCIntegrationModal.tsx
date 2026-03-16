@@ -35,7 +35,7 @@ const LOCATIONS_DEFAULT = [
   'vor dem Haus', 'hinter dem Haus', 'Keller', 'Dachboden', 'Tiefgarage', 'Stiegenhaus'
 ]
 
-// Dropdown Options (from MoroWeb)
+// Dropdown Options (from AmpXWeb)
 const ATTENUATOR_OPTIONS = Array.from({ length: 64 }, (_, i) => (i * 0.5).toFixed(1))
 const EQUALISER_OPTIONS = Array.from({ length: 37 }, (_, i) => (i * 0.5).toFixed(1))
 const I_DAEMPFER_OPTIONS = ['0', '0,5', '1,0', '1,5', '2,0', '2,5', '3,0', '3,5', '4,0', '4,5', '5,0', '5,5', '6,0', '6,5', '7,0', '7,5', '8,0', '8,5', '9,0', '9,5', '10,0', '10,5', '11,0', '11,5', '12,0', '12,5', '13,0', '13,5', '14,0', '14,5', '15,0']

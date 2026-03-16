@@ -174,7 +174,7 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.headerTitle}>MoroApp</Text>
+            <Text style={styles.headerTitle}>AmpXApp</Text>
             <Text style={styles.headerSubtitle}>Verstärker Management</Text>
           </View>
           <TouchableOpacity
