@@ -9,6 +9,7 @@ import { supabase, DatabaseType } from '../lib/supabase'
 import CreateHFCIntegrationModal from './CreateHFCIntegrationModal'
 import CreateFTTXModal from './CreateFTTXModal'
 import PhotoUpload, { PhotoSet, EMPTY_PHOTOS } from './PhotoUpload'
+import OrderNumber from './OrderNumber'
 
 interface CreateAmplifierModalProps {
   visible: boolean
@@ -62,6 +63,7 @@ export default function CreateAmplifierModal({ visible, onClose, onSuccess, dbTy
   const [options, setOptions] = useState<CascadingOptions>(EMPTY_OPTIONS)
   const [creating, setCreating] = useState(false)
   const [photos, setPhotos] = useState<PhotoSet>(EMPTY_PHOTOS)
+  const [generatedOrderNumber, setGeneratedOrderNumber] = useState<string>('')
   const [loading, setLoading] = useState(false)
   const [customFields, setCustomFields] = useState<Record<string, boolean>>({})
 
@@ -197,7 +199,9 @@ export default function CreateAmplifierModal({ visible, onClose, onSuccess, dbTy
           fsk_address: formData.fsk_address || null,
           firmware_version: formData.firmware_version || null,
           datum,
-          bemerkungen: formData.bemerkungen || null,
+          bemerkungen: formData.bemerkungen
+            ? `${formData.bemerkungen}; ${generatedOrderNumber}`
+            : generatedOrderNumber,
         })
         .select()
         .single()
@@ -259,6 +263,9 @@ export default function CreateAmplifierModal({ visible, onClose, onSuccess, dbTy
         </View>
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+
+          {/* AUFTRAGSNUMMER */}
+          <OrderNumber onGenerated={setGeneratedOrderNumber} />
 
           {/* Cascading Fields */}
           <CascadingField

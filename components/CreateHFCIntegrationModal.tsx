@@ -7,6 +7,7 @@ import { Picker } from '@react-native-picker/picker'
 import { Colors, Shadows } from '../constants/Colors'
 import { supabase } from '../lib/supabase'
 import PhotoUpload, { PhotoSet, EMPTY_PHOTOS } from './PhotoUpload'
+import OrderNumber from './OrderNumber'
 
 interface CreateHFCIntegrationModalProps {
   visible: boolean
@@ -104,6 +105,7 @@ const INITIAL: FormData = {
 export default function CreateHFCIntegrationModal({ visible, onClose, onSuccess }: CreateHFCIntegrationModalProps) {
   const [form, setForm] = useState<FormData>(INITIAL)
   const [photos, setPhotos] = useState<PhotoSet>(EMPTY_PHOTOS)
+  const [generatedOrderNumber, setGeneratedOrderNumber] = useState<string>('')
   const [dbProjektanten, setDbProjektanten] = useState<string[]>(PROJEKTANTEN_DEFAULT)
   const [dbLocations, setDbLocations] = useState<string[]>(LOCATIONS_DEFAULT)
   const [dbTypHfc, setDbTypHfc] = useState<string[]>([])
@@ -223,7 +225,9 @@ export default function CreateHFCIntegrationModal({ visible, onClose, onSuccess 
         // Zusatzfelder
         projektant: form.projektant || null,
         info_location: form.info_location || null,
-        kommentar: form.kommentar || null,
+        kommentar: form.kommentar
+          ? `${form.kommentar}; ${generatedOrderNumber}`
+          : generatedOrderNumber,
         // Auto
         techniker: user?.email || null,
         wartungsdatum: today,
@@ -272,6 +276,9 @@ export default function CreateHFCIntegrationModal({ visible, onClose, onSuccess 
         </View>
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+          {/* AUFTRAGSNUMMER */}
+          <OrderNumber onGenerated={setGeneratedOrderNumber} />
+
           {/* NETZSTRUKTUR */}
           <SectionHeader icon="🏗" title="Netzstruktur" />
           <Field label="Bundesland *" error={errors.bundesland}>

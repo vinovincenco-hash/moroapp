@@ -6,6 +6,7 @@ import {
 import { Colors, Shadows } from '../constants/Colors'
 import { supabase } from '../lib/supabase'
 import PhotoUpload, { PhotoSet, EMPTY_PHOTOS } from './PhotoUpload'
+import OrderNumber from './OrderNumber'
 
 interface CreateFTTXModalProps {
   visible: boolean
@@ -31,6 +32,7 @@ const INITIAL: FormData = {
 export default function CreateFTTXModal({ visible, onClose, onSuccess }: CreateFTTXModalProps) {
   const [form, setForm] = useState<FormData>(INITIAL)
   const [photos, setPhotos] = useState<PhotoSet>(EMPTY_PHOTOS)
+  const [generatedOrderNumber, setGeneratedOrderNumber] = useState<string>('')
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({})
   const [saving, setSaving] = useState(false)
 
@@ -69,7 +71,9 @@ export default function CreateFTTXModal({ visible, onClose, onSuccess }: CreateF
         mac_adresse: form.mac_adresse,
         address_line_1: form.address_line_1 || null,
         address_line_2: form.address_line_2 || null,
-        comment_1: form.comment_1 || null,
+        comment_1: form.comment_1
+          ? `${form.comment_1}; ${generatedOrderNumber}`
+          : generatedOrderNumber,
       })
 
       if (error) throw error
@@ -101,6 +105,9 @@ export default function CreateFTTXModal({ visible, onClose, onSuccess }: CreateF
         </View>
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+          {/* AUFTRAGSNUMMER */}
+          <OrderNumber onGenerated={setGeneratedOrderNumber} />
+
           {/* GERÄTE-DATEN */}
           <SectionHeader icon="🌐" title="Geräte-Daten" />
           <Field label="HEC# *" error={errors.hec_nummer}>
